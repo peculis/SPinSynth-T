@@ -129,10 +129,7 @@
 //and MIDI interface. Now I will start introducing additional features.
 //----------------------------------------------------------------------------------
 
-#ifndef SynthUtilities_h
-#define SynthUtilities_h
 #include "SynthUtilities.h"
-#endif
 
 #include "Oscillator.h"
 // #include "XtOscillator.h"
@@ -142,11 +139,6 @@
 
 #include <MIDI.h>
 MIDI_CREATE_DEFAULT_INSTANCE();
-
-#ifndef SynthUtilities_h
-#define SynthUtilities_h
-#include "SynthUtilities.h"
-#endif
 
 #ifndef TRUE_FALSE
 #define TRUE_FALSE
@@ -166,7 +158,20 @@ enum ModWheelFunction {
  Filter vaFilter;
  Amplifier vaAmplifier;
  
- float sampleRate = 44100.0; // Sample Rate = 44.1KHz
+ const float SAMPLE_RATE = 44100.0;
+ const int AUDIO_BUFFER_SIZE = 128;
+ const int AUDIO_OUTPUT_PIN = A14;
+ const int DAC_MIDPOINT = 2048;
+ const int DAC_OUTPUT_SHIFT = 5;
+ const float MIDI_CC_MAX_VALUE = 127.0;
+ const float CENTER_PULSE_WIDTH = 0.5;
+ const float PULSE_WIDTH_MOD_DEPTH = 0.85;
+ const float SAW_XFACTOR_RANGE_CENTS = 100.0;
+ const float SAW_XFACTOR_CENTER_VALUE = 63.5;
+ const float OSC_PULSE_WIDTH_CC_DIVISOR = 317.0;
+ const float SUB_FACTOR_BASE = 0.5;
+
+ float sampleRate = SAMPLE_RATE; // Sample Rate = 44.1KHz
  const int waveTableSize = 2048;
  float maxAmplitude = 4097.0;
  float halfMaxAmplitude = maxAmplitude * 0.4;
@@ -177,13 +182,13 @@ enum ModWheelFunction {
  long startTime;
  long duration;
  
- int outputBufferSize = 128;
+ int outputBufferSize = AUDIO_BUFFER_SIZE;
  
  DoubleBuffer oscillatorBuffer;
  DoubleBuffer filterBuffer;
  DoubleBuffer amplifierBuffer;
  
- ModWheelFunction mModWheenFunction = LFO_OSCILLATOR;
+ ModWheelFunction mModWheelFunction = LFO_OSCILLATOR;
  
  int updatePhase = 0;
  
@@ -213,6 +218,69 @@ enum ModWheelFunction {
  IntervalTimer updatevaOscillatorTimer;
  IntervalTimer updateDCO;
  IntervalTimer updateControls;
+
+ // Global MIDI controls
+ const byte CC_MOD_WHEEL = 1;
+ const byte CC_MASTER_VOLUME = 7;
+ const byte CC_MASTER_TUNE = 41;
+ const byte CC_MOD_WHEEL_FUNCTION = 18;
+
+ // Oscillator MIDI controls
+ const byte CC_OSC_LFO_RATE = 16;
+ const byte CC_OSC_LFO_AMOUNT = 17;
+ const byte CC_OSC_LFO_WAVEFORM = 91;
+ const byte CC_OSC_SAW_AMOUNT = 42;
+ const byte CC_OSC_SAW_XFACTOR = 37;
+ const byte CC_OSC_PULSE_AMOUNT = 43;
+ const byte CC_OSC_PULSE_WIDTH = 38;
+ const byte CC_OSC_SUB_AMOUNT = 44;
+ const byte CC_OSC_SUB_FACTOR = 39;
+ const byte CC_OSC_WAVEFORM = 40;
+ const byte CC_PORTAMENTO = 35;
+
+ // Filter MIDI controls
+ const byte CC_FILTER_CUTOFF = 74;
+ const byte CC_FILTER_RESONANCE = 71;
+ const byte CC_FILTER_LFO_RATE = 76;
+ const byte CC_FILTER_LFO_AMOUNT = 77;
+ const byte CC_FILTER_LFO_WAVEFORM = 93;
+ const byte CC_FILTER_ATTACK = 73;
+ const byte CC_FILTER_DECAY = 75;
+ const byte CC_FILTER_SUSTAIN = 79;
+ const byte CC_FILTER_RELEASE = 72;
+ const byte CC_FILTER_ENVELOPE_LEVEL = 19;
+
+ // Amplifier MIDI controls
+ const byte CC_AMP_ATTACK = 80;
+ const byte CC_AMP_DECAY = 81;
+ const byte CC_AMP_SUSTAIN = 82;
+ const byte CC_AMP_RELEASE = 83;
+
+ // LFO waveform value ranges
+ const byte LFO_WAVE_SINE_MAX = 16;
+ const byte LFO_WAVE_SAW_MAX = 32;
+ const byte LFO_WAVE_INVERTED_SAW_MAX = 48;
+ const byte LFO_WAVE_SQUARE_MAX = 64;
+
+ // Oscillator waveform value ranges
+ const byte OSC_WAVE_SINE_MAX = 20;
+ const byte OSC_WAVE_SAW_MIN = 21;
+ const byte OSC_WAVE_SAW_MAX = 42;
+ const byte OSC_WAVE_SQUARE_MIN = 42;
+ const byte OSC_WAVE_SQUARE_MAX = 62;
+ const byte OSC_WAVE_VARIABLE_PULSE_MIN = 62;
+ const byte OSC_WAVE_VARIABLE_PULSE_MAX = 118;
+ const byte OSC_WAVE_XTREME_MIN = 120;
+
+ // Mod wheel function value ranges
+ const byte MOD_WHEEL_CUTOFF_MAX = 20;
+ const byte MOD_WHEEL_RESONANCE_MIN = 21;
+ const byte MOD_WHEEL_RESONANCE_MAX = 42;
+ const byte MOD_WHEEL_FILTER_LFO_MIN = 42;
+ const byte MOD_WHEEL_FILTER_LFO_MAX = 62;
+ const byte MOD_WHEEL_OSC_LFO_MIN = 62;
+ const byte MOD_WHEEL_OSC_LFO_MAX = 118;
+ const byte MOD_WHEEL_OSC_LFO_HIGH_MIN = 120;
 
  //---------------- MIDI Callbacks -------------------------------
  void HandleNoteOn(byte channel, byte pitch, byte velocity) { 
@@ -251,6 +319,91 @@ void HandleNoteOff(byte channel, byte pitch, byte velocity){
   vaAmplifier.noteOFF(int(pitch), int(velocity));
 }
 
+void setOscillatorLFOwaveform(byte value) {
+  float mValue;
+  if(value <= LFO_WAVE_SINE_MAX){
+    vaOscillator.setLFOwaveform(LFO_SINE);
+  }
+  else if((value > LFO_WAVE_SINE_MAX) && (value <= LFO_WAVE_SAW_MAX)){
+    vaOscillator.setLFOwaveform(LFO_SAW);
+  }
+  else if((value > LFO_WAVE_SAW_MAX) && (value <= LFO_WAVE_INVERTED_SAW_MAX)){
+    vaOscillator.setLFOwaveform(LFO_INVERTED_SAW);
+  }
+  else if((value > LFO_WAVE_INVERTED_SAW_MAX) && (value <= LFO_WAVE_SQUARE_MAX)){
+    vaOscillator.setLFOwaveform(LFO_SQUARE_PULSE);
+    vaOscillator.setLFOpulsewidth(CENTER_PULSE_WIDTH);
+  }
+  else if(value > LFO_WAVE_SQUARE_MAX){
+    mValue = float(value - LFO_WAVE_SQUARE_MAX) / float(LFO_WAVE_SQUARE_MAX);
+    vaOscillator.setLFOwaveform(LFO_SQUARE_PULSE);
+    vaOscillator.setLFOpulsewidth(CENTER_PULSE_WIDTH * (1.0 - PULSE_WIDTH_MOD_DEPTH * mValue));
+  }
+}
+
+void setFilterLFOwaveform(byte value) {
+  float mValue;
+  if(value <= LFO_WAVE_SINE_MAX){
+    vaFilter.setLFOwaveform(LFO_SINE);
+  }
+  else if((value > LFO_WAVE_SINE_MAX) && (value <= LFO_WAVE_SAW_MAX)){
+    vaFilter.setLFOwaveform(LFO_SAW);
+  }
+  else if((value > LFO_WAVE_SAW_MAX) && (value <= LFO_WAVE_INVERTED_SAW_MAX)){
+    vaFilter.setLFOwaveform(LFO_INVERTED_SAW);
+  }
+  else if((value > LFO_WAVE_INVERTED_SAW_MAX) && (value <= LFO_WAVE_SQUARE_MAX)){
+    vaFilter.setLFOwaveform(LFO_SQUARE_PULSE);
+    vaFilter.setLFOpulsewidth(CENTER_PULSE_WIDTH);
+  }
+  else if(value > LFO_WAVE_SQUARE_MAX){
+    mValue = float(value - LFO_WAVE_SQUARE_MAX) / float(LFO_WAVE_SQUARE_MAX);
+    vaFilter.setLFOwaveform(LFO_SQUARE_PULSE);
+    vaFilter.setLFOpulsewidth(CENTER_PULSE_WIDTH * (1.0 - PULSE_WIDTH_MOD_DEPTH * mValue));
+  }
+}
+
+void setOscillatorWaveform(byte value) {
+  float mValue;
+  if(value <= OSC_WAVE_SINE_MAX){
+    vaOscillator.setWaveform(SINE);
+  }
+  else if((value > OSC_WAVE_SAW_MIN) && (value <= OSC_WAVE_SAW_MAX)){
+    vaOscillator.setWaveform(SAW);
+  }
+  else if((value > OSC_WAVE_SQUARE_MIN) && (value <= OSC_WAVE_SQUARE_MAX)){
+    vaOscillator.setWaveform(SQUARE_PULSE);
+    vaOscillator.setPulseWidth(CENTER_PULSE_WIDTH);
+  }
+  else if((value > OSC_WAVE_VARIABLE_PULSE_MIN) && (value <= OSC_WAVE_VARIABLE_PULSE_MAX)){
+    mValue = float(value - OSC_WAVE_VARIABLE_PULSE_MIN) / float(OSC_WAVE_VARIABLE_PULSE_MIN);
+    vaOscillator.setWaveform(SQUARE_PULSE);
+    vaOscillator.setPulseWidth(CENTER_PULSE_WIDTH * (1.0 - PULSE_WIDTH_MOD_DEPTH * mValue));
+  }
+  else if(value > OSC_WAVE_XTREME_MIN){
+    vaOscillator.setWaveform(XTREME);
+    vaOscillator.setPulseWidth(CENTER_PULSE_WIDTH);
+  }
+}
+
+void setModWheelFunction(byte value) {
+  if(value <= MOD_WHEEL_CUTOFF_MAX){
+    mModWheelFunction = CUTOFF;
+  }
+  else if((value > MOD_WHEEL_RESONANCE_MIN) && (value <= MOD_WHEEL_RESONANCE_MAX)){
+    mModWheelFunction = RESONANCE;
+  }
+  else if((value > MOD_WHEEL_FILTER_LFO_MIN) && (value <= MOD_WHEEL_FILTER_LFO_MAX)){
+    mModWheelFunction = LFO_FILTER;
+  }
+  else if((value > MOD_WHEEL_OSC_LFO_MIN) && (value <= MOD_WHEEL_OSC_LFO_MAX)){
+    mModWheelFunction = LFO_OSCILLATOR;
+  }
+  else if(value > MOD_WHEEL_OSC_LFO_HIGH_MIN){
+    mModWheelFunction = LFO_OSCILLATOR;
+  }
+}
+
 //RP: I created this Callback - ModWheel is a ControlChange
 //ControlChange sends the numeric values of potentiometers and these are associated with
 //a Control like Filter Frequency and Resonance, and Envelope Parameters (ADSR).
@@ -269,8 +422,8 @@ void HandleControlChange(byte channel, byte number, byte value) {
   Serial.println(value);
 */
   switch (number){
-    case 1: //Modulation Wheel is controlling LFO Amount for Oscillator frequency
-      switch (mModWheenFunction){
+    case CC_MOD_WHEEL: //Modulation Wheel is controlling LFO Amount for Oscillator frequency
+      switch (mModWheelFunction){
         case CUTOFF:
           vaFilter.setModCutoff(value);
         break;
@@ -285,181 +438,94 @@ void HandleControlChange(byte channel, byte number, byte value) {
         break;
       }
       break;
-    case 41: //Master Tuning
+    case CC_MASTER_TUNE: //Master Tuning
       vaOscillator.setTuning(value);
       break;
-    case 18: // Determines the function of the Pitch Bend Whel
-      if(value <= 20){
-        //Filter Cutoff
-       mModWheenFunction = CUTOFF;
-      }
-      else if((value > 21) && (value <= 42)){
-        //Filter Resonance
-        mModWheenFunction = RESONANCE;
-      }
-      else if((value > 42) && (value <= 62)){
-        //LFO Filter
-        mModWheenFunction = LFO_FILTER;
-      }
-      else if((value > 62) && (value <= 118)){
-        //LFO Oscillator
-         mModWheenFunction = LFO_OSCILLATOR;
-      }
-      else if(value > 120){
-        //LFO Oscillator
-        mModWheenFunction = LFO_OSCILLATOR;
-      }
+    case CC_MOD_WHEEL_FUNCTION: // Determines the function of the Pitch Bend Whel
+      setModWheelFunction(value);
       break;
-    case 16:
+    case CC_OSC_LFO_RATE:
       vaOscillator.setLFOrate(value);
       break;
-    case 17:
+    case CC_OSC_LFO_AMOUNT:
       vaOscillator.setLFOamount(value);
       break;
-    case 91:
-      waveshape = "";
-      if(value <= 16){
-        vaOscillator.setLFOwaveform(LFO_SINE);
-      }
-      else if((value > 16) && (value <= 32)){
-        vaOscillator.setLFOwaveform(LFO_SAW);
-      }
-      else if((value > 32) && (value <= 48)){
-        vaOscillator.setLFOwaveform(LFO_INVERTED_SAW);
-      }
-      else if((value > 48) && (value <= 64)){
-        vaOscillator.setLFOwaveform(LFO_SQUARE_PULSE);
-        vaOscillator.setLFOpulsewidth(0.5);
-      }
-      else if(value > 64){
-        mValue = float(value - 64) / 64.0;
-        vaOscillator.setLFOwaveform(LFO_SQUARE_PULSE);
-        vaOscillator.setLFOpulsewidth(0.5 * (1.0 - 0.85 * mValue));
-      }
-    case 42:
-      mValue = float(value) / 127.0;
+    case CC_OSC_LFO_WAVEFORM:
+      setOscillatorLFOwaveform(value);
+      break;
+    case CC_OSC_SAW_AMOUNT:
+      mValue = float(value) / MIDI_CC_MAX_VALUE;
       vaOscillator.setSawAmount(mValue);
       break;
-     case 37:
-      mValue = 100.0 * (-1.0 + float(value) / 63.5);
+     case CC_OSC_SAW_XFACTOR:
+      mValue = SAW_XFACTOR_RANGE_CENTS * (-1.0 + float(value) / SAW_XFACTOR_CENTER_VALUE);
       vaOscillator.setSawXfactor(mValue);
       break;
-    case 43:
-      mValue = float(value) / 127.0;
+    case CC_OSC_PULSE_AMOUNT:
+      mValue = float(value) / MIDI_CC_MAX_VALUE;
       vaOscillator.setPulseAmount(mValue);
       break;
-    case 38:
-      pulseW = 0.5 - float(value) / 317.0;
+    case CC_OSC_PULSE_WIDTH:
+      pulseW = CENTER_PULSE_WIDTH - float(value) / OSC_PULSE_WIDTH_CC_DIVISOR;
       vaOscillator.setPulseWidth(pulseW);
       break;
-    case 44:
-      mValue = float(value) / 127.0;
+    case CC_OSC_SUB_AMOUNT:
+      mValue = float(value) / MIDI_CC_MAX_VALUE;
       vaOscillator.setSubAmout(mValue);
       break;
-    case 39:
-      mValue = 0.5 + float(value) / 127.0;
+    case CC_OSC_SUB_FACTOR:
+      mValue = SUB_FACTOR_BASE + float(value) / MIDI_CC_MAX_VALUE;
       vaOscillator.setSubFactor(mValue);
       break;
-    case 74:
+    case CC_FILTER_CUTOFF:
       vaFilter.setDialCutoff(value);
       break;
-    case 71:
+    case CC_FILTER_RESONANCE:
       vaFilter.setDialResonance(value);
       break;
-    case 76:
+    case CC_FILTER_LFO_RATE:
       vaFilter.setLFOrate(value);
       break;
-    case 77:
+    case CC_FILTER_LFO_AMOUNT:
       vaFilter.setLFOamount(value);
       break;
-    case 93:
-      waveshape = "";
-      if(value <= 16){
-        vaFilter.setLFOwaveform(LFO_SINE);
-      }
-      else if((value > 16) && (value <= 32)){
-        vaFilter.setLFOwaveform(LFO_SAW);
-      }
-      else if((value > 32) && (value <= 48)){
-        vaFilter.setLFOwaveform(LFO_INVERTED_SAW);
-      }
-      else if((value > 48) && (value <= 64)){
-        vaFilter.setLFOwaveform(LFO_SQUARE_PULSE);
-        vaFilter.setLFOpulsewidth(0.5);
-      }
-      else if(value > 64){
-        mValue = float(value - 64) / 64.0;
-        vaFilter.setLFOwaveform(LFO_SQUARE_PULSE);
-        vaFilter.setLFOpulsewidth(0.5 * (1.0 - 0.85 * mValue));
-      }
-    case 73:
+    case CC_FILTER_LFO_WAVEFORM:
+      setFilterLFOwaveform(value);
+      break;
+    case CC_FILTER_ATTACK:
       vaFilter.setAttack(value);
       break;
-    case 75:
+    case CC_FILTER_DECAY:
       vaFilter.setDecay(value);
       break;
-    case 79:
+    case CC_FILTER_SUSTAIN:
       vaFilter.setSustain(value);
       break;
-    case 72:
+    case CC_FILTER_RELEASE:
       vaFilter.setRelease(value);
       break;
-    case 19:
+    case CC_FILTER_ENVELOPE_LEVEL:
       vaFilter.setEnvelopeLevel(value);
       break;
-    case 80:
+    case CC_AMP_ATTACK:
       vaAmplifier.setAttack(value);
       break;
-    case 81:
+    case CC_AMP_DECAY:
       vaAmplifier.setDecay(value);
       break;
-    case 82:
+    case CC_AMP_SUSTAIN:
       vaAmplifier.setSustain(value);
       break;
-    case 83:
+    case CC_AMP_RELEASE:
       vaAmplifier.setRelease(value);
       break;
-    case 7:
+    case CC_MASTER_VOLUME:
       vaAmplifier.setVolume(value);
       break;
-    case 40:
-      waveshape = "";
-      if(value <= 20){
-        waveshape = "SINE";
-        vaOscillator.setWaveform(SINE);
-      }
-      else if((value > 21) && (value <= 42)){
-        waveshape = "SAW";
-        vaOscillator.setWaveform(SAW);
-      }
-      else if((value > 42) && (value <= 62)){
-        waveshape = "SQUARE_PULSE";
-        vaOscillator.setWaveform(SQUARE_PULSE);
-        vaOscillator.setPulseWidth(0.5);
-      }
-      else if((value > 62) && (value <= 118)){
-        waveshape = "SQUARE_PULSE";
-        mValue = float(value - 62) / 62.0;
-        vaOscillator.setWaveform(SQUARE_PULSE);
-        vaOscillator.setPulseWidth(0.5 * (1.0 - 0.85 * mValue));
-      }
-      else if(value > 120){
-        waveshape = "XTREME";
-        vaOscillator.setWaveform(XTREME);
-        vaOscillator.setPulseWidth(0.5);
-      }
-      /*
-      Serial.print("Control Change #");
-      Serial.print(number);
-      Serial.print(" Channel ");
-      Serial.print(channel);
-      Serial.print(" : Waveform ");
-      Serial.print(waveshape);
-      Serial.print(" ");
-      Serial.println(value);
-      */
+    case CC_OSC_WAVEFORM:
+      setOscillatorWaveform(value);
       break;
-    case 35:
+    case CC_PORTAMENTO:
       vaOscillator.setPortamento(int(value));
       /*
       Serial.print("Control Change #");
@@ -529,7 +595,7 @@ void HandlePitchBend(byte channel, int bend) {
  }
  
  // outputBufferedDAC() sends datat from the outputBuffer to the DAC.
- //The outputBuffer is filled by the Oscillator with outputBufferSize samples
+ //The outputBuffer is filled by the Oscillator with AUDIO_BUFFER_SIZE samples
  //in one call to vaOscillator.getNextBuffer(buffer, bufferSize).
  void outputBufferedDAC(){
    // float oscillatorSample;
@@ -540,7 +606,7 @@ void HandlePitchBend(byte channel, int bend) {
    // float* readBuffer;
    /*
    outputSample++;
-   if(outputSample == (outputBufferSize)){
+   if(outputSample == AUDIO_BUFFER_SIZE){
      swapOscillatorBuffer();
    }
    oscillatorSample = outputBuffer[outputSample];
@@ -551,7 +617,7 @@ void HandlePitchBend(byte channel, int bend) {
    //oscillatorSample = outputBuffer[outputSample];
    
    outputSample++;
-   if(outputSample == (outputBufferSize)){
+   if(outputSample == AUDIO_BUFFER_SIZE){
      oscillatorBuffer.swapBuffer();
      filterBuffer.swapBuffer();
      outputSample = 0;
@@ -569,7 +635,7 @@ void HandlePitchBend(byte channel, int bend) {
    //dacOutput = 2048 + ((lFilterSample >> 5));
    
    lAmplifierSample = amplifierBuffer.read();
-   dacOutput = 2048 + ((lAmplifierSample >> 5));
+   dacOutput = DAC_MIDPOINT + (lAmplifierSample >> DAC_OUTPUT_SHIFT);
    
    
    //filterSample = filterBuffer.read();
@@ -580,7 +646,7 @@ void HandlePitchBend(byte channel, int bend) {
    //filterSample = oscillatorSample;
    //dacOutput = int(halfMaxAmplitude * (1.25 + filterSample));
    //dacOutput = int(halfMaxAmplitude * (1.0 + outputBuffer[outputSample] * amplitudeDCO1));
-   analogWrite(A14, dacOutput);
+   analogWrite(AUDIO_OUTPUT_PIN, dacOutput);
  }
  
  //updateSingleDAC() is the interrupt callback used to update one single sample
@@ -594,7 +660,7 @@ void HandlePitchBend(byte channel, int bend) {
    nextSampleFilter = vaFilter.update(nextSampleOscillator);
    nextSample = nextSampleFilter;
    dacOutput = int(halfMaxAmplitude * (1.0 + nextSample));
-   analogWrite(A14, dacOutput);
+   analogWrite(AUDIO_OUTPUT_PIN, dacOutput);
  }
 
 void printDuration()
@@ -668,7 +734,7 @@ void setup() {
   Serial.begin(9600);
   analogWriteResolution(12);
   
-  outputBufferSize = 128;
+  outputBufferSize = AUDIO_BUFFER_SIZE;
   synchDAC = FALSE;
   getNextOscillatorBuffer = FALSE;
   updatePhase = 0;

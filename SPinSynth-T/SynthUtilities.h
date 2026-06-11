@@ -18,6 +18,9 @@
 //It is working using part of the original logic without the Double Buffer Class.
 //-----------------------------------------------------------
 
+#ifndef SYNTH_UTILITIES_H
+#define SYNTH_UTILITIES_H
+
 #include <Arduino.h>
 #include <stdint.h>
 
@@ -90,3 +93,5 @@ private:
   int readyToWrite = FALSE;
 };
 
+
+#endif

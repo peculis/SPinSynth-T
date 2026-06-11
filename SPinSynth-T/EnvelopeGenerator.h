@@ -8,15 +8,12 @@
 //although further adjustments may be needed.
 //---------------------------------------------------
 
-#ifndef Arduino_h
-#define Arduino_h
-#include <Arduino.h>
-#endif
+#ifndef ENVELOPE_GENERATOR_H
+#define ENVELOPE_GENERATOR_H
 
-#ifndef SynthUtilities_h
-#define SynthUtilities_h
+#include <Arduino.h>
+
 #include "SynthUtilities.h"
-#endif
 
 enum EnvelopeState {
    _OFF,
@@ -67,3 +64,5 @@ private:
   long  lOutputLevel = 0;
   float exp(float x); //returns e**x or pow(e, x);
 };
+
+#endif

@@ -129,6 +129,7 @@ float EnvelopeGenerator::update(){
   switch(mState){
     case _OFF:{
       mOutput = 0.0;
+      break; 
     }
     case ATTACK:{
       mOutput = mAttackXo + mOutput * mAttackCf;
@@ -140,7 +141,7 @@ float EnvelopeGenerator::update(){
     }
     case DECAY:{
       mOutput = mDecayXo + mOutput * mDecayCf;
-      if(mGate <= mSustain){
+      if(mOutput <= mSustain){
         mOutput = mSustain;
         mState = SUSTAIN;
       }

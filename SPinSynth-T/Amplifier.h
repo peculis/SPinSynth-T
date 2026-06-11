@@ -7,15 +7,12 @@
 //amount of Envelope Amplitude Modulation.
 //------------------------------------------------------------------------------
 
-#ifndef SynthUtilities_h
-#define SynthUtilities_h
-#include "SynthUtilities.h"
-#endif
+#ifndef AMPLIFIER_H
+#define AMPLIFIER_H
 
-#ifndef EnvelopeGenerator_h
-#define EnvelopeGenerator_h
+#include "SynthUtilities.h"
+
 #include "EnvelopeGenerator.h"
-#endif
 
 class Amplifier{
 public:
@@ -46,3 +43,5 @@ private:
   float mVelocity;
   long  lVelocity;
 };
+
+#endif

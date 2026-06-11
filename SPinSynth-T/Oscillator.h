@@ -34,19 +34,16 @@
 //an Overtone Oscillator.
 //-----------------------------------------------------------------------
 
-#ifndef SynthUtilities_h
-#define SynthUtilities_h
+#ifndef OSCILLATOR_H
+#define OSCILLATOR_H
+
 #include "SynthUtilities.h"
-#endif
 
 #include <math.h>
 #include "SynthTables.h"
 //#include "midi_pitch_table.h"
 
-#ifndef LFO_h
-#define LFO_h
 #include "LowFrequencyOscillator.h"
-#endif
 
 #define FLAT 14
 #define TUNED 15
@@ -213,3 +210,4 @@ public:
       updateIncrement(mFrequency); };
 };
 
+#endif

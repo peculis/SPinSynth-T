@@ -8,12 +8,10 @@
 //LFO Waveform (SINE, SAW, INVERTED_SAW, SQUARE and PULSE). 
 //-----------------------------------------------------------------------
 
-///*
-#ifndef SynthUtilities_h
-#define SynthUtilities_h
+#ifndef LOW_FREQUENCY_OSCILLATOR_H
+#define LOW_FREQUENCY_OSCILLATOR_H
+
 #include "SynthUtilities.h"
-#endif
-//*/
 
 #include <math.h>
 
@@ -102,3 +100,4 @@ public:
       updateIncrement(mFrequency); };
 };
 
+#endif

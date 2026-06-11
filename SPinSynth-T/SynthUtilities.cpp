@@ -90,13 +90,14 @@ void DoubleBuffer::swapBuffer(){
   readyToWrite = TRUE;
 }
 
+// Return the current sample before advancing; this preserves sample 0 after each swap.
 float DoubleBuffer::read(){
-  float* xBuffer;
+  float sample = readBuffer[readSample];
   readSample++;
   if(readSample >= bSize){
     swapBuffer();
   }
-  return (readBuffer[readSample]);
+  return sample;
 }
 
 void DoubleBuffer::write(float sample){

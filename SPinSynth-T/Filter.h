@@ -27,20 +27,14 @@
 //This Filter is based on Martin Finke's Filter: Making Audio Plugins Part 13
 //-----------------------------------------------------------
 
-#ifndef SynthUtilities_h
-#define SynthUtilities_h
+#ifndef FILTER_H
+#define FILTER_H
+
 #include "SynthUtilities.h"
-#endif
 
-#ifndef EnvelopeGenerator_h
-#define EnvelopeGenerator_h
 #include "EnvelopeGenerator.h"
-#endif
 
-#ifndef LFO_h
-#define LFO_h
 #include "LowFrequencyOscillator.h"
-#endif
 
 enum FilterMode {
      LOWPASS,
@@ -134,3 +128,5 @@ private:
   void calculateFeedback();
   void calculateCutoff();
 };
+
+#endif
