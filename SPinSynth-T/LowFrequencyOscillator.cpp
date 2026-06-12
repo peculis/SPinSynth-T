@@ -2,14 +2,13 @@
 //LowFrequencyOscillator.cpp - Last update: 14 Mar 2015 - Started: 14 Feb 2015.
 //-----------------------------------------------------------------------
 //14 Mar 2015: LowFrequencyOscillator (LFO) is a simplified oscillator based on
-//the Oscillator class meant to be used as controller and modullator.
+//the Oscillator class meant to be used as controller and modulator.
 //The following parameters can be controlled:
-//LFO Rate (0.1 to 12.7Hz), amout (0.0 to 1.0) and
+//LFO Rate (0.1 to 12.7Hz), amount (0.0 to 1.0) and
 //LFO Waveform (SINE, SAW, INVERTED_SAW, SQUARE and PULSE). 
 //-----------------------------------------------------------------------
 
 #include "LowFrequencyOscillator.h"
-//#include <Arduino.h>
 
 const float kx = 1.2; //Defines the waveshape amplitude -/+ 1.0.
 

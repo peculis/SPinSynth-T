@@ -2,30 +2,30 @@
 //SPinSynth-T - Monophonic Software Synthesizer Developed by Ricardo Peculis. 
 //Last update: 9 June 2026 - Started: 22 Feb 2015
 //----------------------------------------------------------------------------------
-//To compile this scketch, select the Teensy board as 3.2/3.1 and USB Type as Serial+MIDI.
+//To compile this sketch, select the Teensy board as 3.2/3.1 and USB Type as Serial+MIDI.
 //----------------------------------------------------------------------------------
-//9 June 2026 - Today I am commiting this sketch to GitHub as it is compilinh and working as when I
+//9 June 2026 - Today I am committing this sketch to GitHub as it is compiling and working as when I
 //developed it in 2015. I had to reassemble the hardware in a breadboard because I damaged the original
-//printed cricuit board. It is working now. I tested all the functions, including MIDI and USB-MIDI.
-//I used Artyuria KEYLAB25 to test the SPinSynth-T (see the list of MIDI Controls below).
+//printed circuit board. It is working now. I tested all the functions, including MIDI and USB-MIDI.
+//I used Arturia KEYLAB25 to test the SPinSynth-T (see the list of MIDI Controls below).
 //It is important to observe that SPinSynth-T is not a finished product. It was used to experiment the
 //development of a software synthesizer using Teensy 3.1 micro-computer. I developed my own software
-//for the Oscilators, Filter, Amplifier, Envelope Generatos and I didi not make use of the Audio Library
+//for the Oscillators, Filter, Amplifier, Envelope Generators and I did not make use of the Audio Library
 //developed by Paul Stoffregen from PJRC. SPinSynth-T, however, uses his MIDI and USB-MIDI.
 //----------------------------------------------------------------------------------
 //26 April 2026 - Eleven years after the last change to this sketch, I decided to compile it again.
-//The reason was to make sure it was still working to become a basline for futher improvements.
+//The reason was to make sure it was still working to become a baseline for further improvements.
 //I will include here a history for my own benefit.
-//In the Arduini Ide, I selected the Teeansy 3.2/3.1 board and USB Type: USB + MIDI (selected in Tools).
+//In the Arduino IDE, I selected the Teensy 3.2/3.1 board and USB Type: USB + MIDI (selected in Tools).
 //To my surprise, or not, the sketch did not compile. The reasons beat me. There were too many errors
 //and warnings. After a few days working on it, I fixed the errors and a few warnings (there are many
 //warnings still there). After a successful compiling the sketch did not work as expected. The synth
 //played with strange noises. After much investigation, I figured out that the anti-aliasing technique
 //I implemented (polyblep with tables) was causing the problem. Initially I removed the anti-aliasing
-//mechanism and the weird noise disapeared. 
+//mechanism and the weird noise disappeared. 
 //----------------------------------------------------------------------------------
 //MIDI Controls from Arturia KEYLAB25 (11 Feb 2017)
-//PichBend   - CC#0  - Pitch Bend
+//PitchBend   - CC#0  - Pitch Bend
 //ModWheel   - CC#1  - Modulation Wheel: LFO Amount and Oscillator Frequency
 //VOLUME Pot - CC#7  - Master Volume
 //Bank 1 P1  - CC#74 - Filter Cutoff Frequency
@@ -48,11 +48,11 @@
 //Bank 2 P8  - CC#42 - Oscillator SAW Amount
 //Bank 2 P9  - CC#43 - Oscillator PULSE Amount
 //Bank 2 P10 - CC#44 - Oscillator SUB Amount
-//F1         - CC#67 - Filter Atack
+//F1         - CC#67 - Filter Attack
 //F2         - CC#68 - Filter Decay
 //F3         - CC#69 - Filter Sustain
 //F4         - CC#70 - Filter Release
-//F5         - CC#87 - Amplifier Atack
+//F5         - CC#87 - Amplifier Attack
 //F6         - CC#88 - Amplifier Decay
 //F7         - CC#89 - Amplifier Sustain
 //F8         - CC#90 - Amplifier Release
@@ -60,12 +60,12 @@
 //----------------------------------------------------------------------------------
 //23 Apr 2015: Fixed USB MIDI initialisation ( usbMIDI.begin(); was commented out ) 
 //----------------------------------------------------------------------------------
-//10 Apr 2015: Implemened Tuning LEDs.
+//10 Apr 2015: Implemented Tuning LEDs.
 //----------------------------------------------------------------------------------
 //8 Apr 2015: I had a compilation scare today. This is a safety checkin to make sure 
 //I did not lose any recent uncontrolled changes.
 //----------------------------------------------------------------------------------
-//4 Apr 2015: Implemented master Volume CC#7. Changed Filter Envelop Amout to
+//4 Apr 2015: Implemented master Volume CC#7. Changed Filter Envelop Amount to
 //Bank1 Pot P7 (Fader F9 Bank 1 is not used). Changed the default Filter CutOff 
 //to max value (0.9, open filter).
 //----------------------------------------------------------------------------------
@@ -80,8 +80,8 @@
 //as reported on 29 March.
 //----------------------------------------------------------------------------------
 //29 Mar 2015: Implemented Note ON/OFF event management to replicate the behaviour of
-//monophonic keyboards where when two notes are presses simultaneously the higher note
-//will play and when the highest key is released the heigher key immediately below
+//monophonic keyboards where when two notes are pressed simultaneously the higher note
+//will play and when the highest key is released the higher key immediately below
 //that is still pressed will play. Implemented also the effect of Key Velocity applied to the
 //amount of Envelope Amplitude Modulation and the amount of Envelope Filter Cutoff Modulation.
 //With these I completed the basic functionality for the SPin Synth. There are improvements
@@ -91,11 +91,11 @@
 //Moved the Note ON LED to the EnvelopeGenerator Class.
 //----------------------------------------------------------------------------------
 //16 Mar 2015: Changed XTREME waveform to implement Detuned and SubOscillator
-//Detuned detunes the a second SAW wavefor by +/- 100 Cents (or one semi-tone)
+//Detuned detunes the a second SAW waveform by +/- 100 Cents (or one semi-tone)
 //SubOscillator adds a third SAW waveform with frequency one octave below (P3 Bank2)
 //or one fifth above (P5 Bank2). PULSE WIDTH is controlled by P4 Bank 2. The amount 
-//of XTREME SAW, PULSE and SUB can be controlled separatelly by P8, P9 and P10 Bank 2.
-//XTREME SAW Amout CC#42, XTREME FACTOR CC#37: P8 and P3 Bank2
+//of XTREME SAW, PULSE and SUB can be controlled separately by P8, P9 and P10 Bank 2.
+//XTREME SAW Amount CC#42, XTREME FACTOR CC#37: P8 and P3 Bank2
 //PULSE Amount CC#43, PULSE WIDTH CC#37: P9 and P4 Bank2
 //SUB Amount CC#44, SUB FACTOR CC#39: P10 and P5 Bank2
 //-----------------------------------------------------------------------
@@ -103,9 +103,9 @@
 //Still requires tuning, and additional control, but it works.
 //----------------------------------------------------------------------------------
 //15 Mar 2015: Implemented the Low Frequency Oscillator (LFO) class and applied it to
-//control the Oscillator frequency by seeting LFO Rate (0.1 to 12.7Hz), amout (0.0 to 1.0)
+//control the Oscillator frequency by setting LFO Rate (0.1 to 12.7Hz), amount (0.0 to 1.0)
 //and LFO Waveform (SINE, SAW, INVERTED_SAW, SQUARE and PULSE). 
-//I amd now using the two Control Change (CC) Banks as following:
+//I am now using the two Control Change (CC) Banks as following:
 //Bank1: P1 Filter Cutoff, Pe Filter Resonance, P3 LFO Rate, P4 LFO Amount, P5 LFO Waveform.
 //Modulation Wheel (CC#1) is controlling LFO1 Amount to control Oscillator Pitch Modulation.
 //Bank1: P6 to P10 are not in use yet.
@@ -116,16 +116,16 @@
 //----------------------------------------------------------------------------------
 //13 Mar 2015: Resolved the "glitch" caused by high processing load. Initially 
 //I thought I had improved performance by replacing floating point with fixed
-//point calculation, but that was not the case, it got worse, and I referted
-//to floating point. Therefore, the Oscillator produces samples using frloating point.
-//Introduced a new waveshape oprion XTREME in addition to the existing ones. XTREME
+//point calculation, but that was not the case, it got worse, and I reverted
+//to floating point. Therefore, the Oscillator produces samples using floating point.
+//Introduced a new waveshape option XTREME in addition to the existing ones. XTREME
 //will implement all the features of paraphony (for the moment it just mixes SAW and
 //SQUARE_PULSE.
 //----------------------------------------------------------------------------------
-//12 Mar 2015: I start here the final version of my syntheziser based on Teensy 3.1 
-//microcontroller, now names as SPinSynth-01. This version starts fromm everything 
+//12 Mar 2015: I start here the final version of my synthesizer based on Teensy 3.1 
+//microcontroller, now names as SPinSynth-01. This version starts from everything 
 //I have developed so far as Synth-01-Teensy and it is already a fully operational 
-//syntheziser with one VA Oscillator, VA Filter, VA Amplifier, Envelope Generator
+//synthesizer with one VA Oscillator, VA Filter, VA Amplifier, Envelope Generator
 //and MIDI interface. Now I will start introducing additional features.
 //----------------------------------------------------------------------------------
 
@@ -477,7 +477,7 @@ void HandlePitchBend(byte channel, int bend) {
   
 //----------------- End MIDI Callbacks -------------------------
 
- // outputBufferedDAC() sends datat from the outputBuffer to the DAC.
+ // outputBufferedDAC() sends data from the outputBuffer to the DAC.
  //The outputBuffer is filled by the Oscillator with AUDIO_BUFFER_SIZE samples
  //in one call to vaOscillator.getNextBuffer(buffer, bufferSize).
  void outputBufferedDAC(){

@@ -1,12 +1,12 @@
 //-------------------------------------------------------------------------------------
 //SynthUtilities.cpp - Last update: 29 Mar 2015 - Started: 26 Feb 2015.
 //Contains a number of classes used in My Synth
-//Implementes double buffer mechanism for float numbers.
+//Implements the double buffer mechanism for float numbers.
 //-------------------------------------------------------------------------------------
 //29 Mar 2015: Implemented LFO and Mod Wheel Cutoff Modulation and improved Cutoff 
 //Modulation in general.
 //-------------------------------------------------------------------------------------
-//06 Mar 2015: Included in SythUtilities namespace FixedPoint to provide the operations
+//06 Mar 2015: Included in SynthUtilities namespace FixedPoint to provide the operations
 //to support Fixed Point Integer calculation.
 //-----------------------------------------------------------
 //02 Mar 2015: Implemented class DoubleBuffer in SynthUtilities and it is partially working.

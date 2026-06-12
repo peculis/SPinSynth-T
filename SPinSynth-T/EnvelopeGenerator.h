@@ -3,7 +3,7 @@
 //---------------------------------------------------
 //19 Mar 2015: Moved the Note ON LED to the EnvelopeGenerator Class.
 //---------------------------------------------------
-//09 Mar 2015: Calibrated the constants to define offset Xo and coefficiet Cf
+//09 Mar 2015: Calibrated the constants to define offset Xo and coefficient Cf
 //as suggested by Will Pirkle's book. The Envelope Generator is working fine,
 //although further adjustments may be needed.
 //---------------------------------------------------

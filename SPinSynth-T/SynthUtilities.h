@@ -1,19 +1,19 @@
 //-------------------------------------------------------------------------------------
 //SynthUtilities.h - Last update: 29 Mar 2015 - Started: 26 Feb 2015.
 //Contains a number of classes used in My Synth
-//Implementes double buffer mechanism for float numbers.
+//Implements the double buffer mechanism for float numbers.
 //-------------------------------------------------------------------------------------
-//29 Mar 2015: Create KeyEvent class (behaves like a record) to manage Key ON/OFF events.
-//This class is used to  replicate the behaviour of monophinic keyboards where when two notes 
-//are oresses simjultaneously the higher note will play and when the highes key is rereased 
-//the heigher key immediately below that is still pressed will play.
+//29 Mar 2015: Created KeyEvent class (behaves like a record) to manage Key ON/OFF events.
+//This class is used to replicate the behaviour of monophonic keyboards where when two notes 
+//are pressed simultaneously the higher note will play and when the highest key is released 
+//the higher key immediately below that is still pressed will play.
 //-------------------------------------------------------------------------------------
-//06 Mar 2015: Included in SythUtilities namespace FixedPoint to provide the operations
+//06 Mar 2015: Included in SynthUtilities namespace FixedPoint to provide the operations
 //to support Fixed Point Integer calculation.
 //-----------------------------------------------------------
 //05 Mar 2015: Included some constants to handle fixed point long integer calculations.
 //-----------------------------------------------------------
-//02 Mar 2015: Implemented class DoubleBuffer in Synth Utilities and it is partially working.
+//02 Mar 2015: Implemented class DoubleBuffer in SynthUtilities and it is partially working.
 //There is some problem with the logic to check if the Write Buffer is Ready to Write.
 //It is working using part of the original logic without the Double Buffer Class.
 //-----------------------------------------------------------

@@ -1,27 +1,26 @@
 //-------------------------------------------------------------------------------------
 //Filter.cpp - Last update: 2 Apr 2015 - Started: 25 Feb 2015.
 //-------------------------------------------------------------------------------------
-//2 Apr 2015: Reduced the range of Cutoff (see calculateCutoff()) to prevevt the Filter 
-//to become unstable.
+//2 Apr 2015: Reduced the range of Cutoff (see calculateCutoff()) to keep the filter stable.
 //-------------------------------------------------------------------------------------
 //29 Mar 2015: Implemented LFO and Mod Wheel Cutoff Modulation and improved Cutoff 
 //Modulation in general. Implemented also the effect of Key Velocity applied to the
 //amount of Envelope Cutoff Modulation,
 //-------------------------------------------------------------------------------------
-//13 Mar 2015: Reverted the filter input to floaing point (see the XtOscillator class.
+//13 Mar 2015: Reverted the filter input to floating point (see the XtOscillator class.
 //---------------------------------------------------
 //10 Mar 2015: Implemented Envelope Control to Filter including
 //Envelope Level and inversion.
 //---------------------------------------------------
 //06 Mar 2015: Implemented updateBuffer using Double Buffer mechanism.
-//updateBuffer calculates the fileter using Fixed Point Integer numbers.
+//updateBuffer calculates the filter using Fixed Point Integer numbers.
 //---------------------------------------------------
 //05 Mar 2015: Implemented the VA Filter with Fixed Point numbers as long integer.
-//See lUpdate(long input) and the constants in SynthUtilities.h.
+//See updateBuffer() and the constants in SynthUtilities.h.
 //---------------------------------------------------
-//Implementes a Virtual Analog (VA) Filter with the following features:
-//24DB per octave; Cuttof and Resonance control and ADSR Envelope
-//controlling the Cuttof frequency.
+//Implements a Virtual Analog (VA) Filter with the following features:
+//24DB per octave; Cutoff and Resonance control and ADSR Envelope
+//controlling the Cutoff frequency.
 //This Filter is based on Martin Finke's Filter: Making Audio Plugins Part 13
 //-----------------------------------------------------------
 
@@ -29,19 +28,15 @@
 
 void Filter::calculateFeedback(){
   float newResonance;
-  //lCutoff = FixedPoint::convertToFP(mCutoff);
-  //mEnvelopeCutoff = mCutoff;
-  //xCutoff = 0.9;
   newResonance = mResonance + alpha * (mDialResonance - mResonance);
   if(newResonance >= 0.95){
-    newResonance = 0.95; //Reduced the range to prevevt the Filter to become unstable.
+    newResonance = 0.95; //Clamp the range to keep the filter stable.
   }
   else if(newResonance <= 0.01){
-    newResonance = 0.01; //Reduced the range to prevevt the Filter to become unstable.
+    newResonance = 0.01; //Clamp the range to keep the filter stable.
   }
   mResonance = newResonance;
   mFeedback = double((mResonance + mResonance / (1.0 - (mCutoff))));
-  //mFeedback = double((mDialResonance + mDialResonance / (1.0 - (mCutoff))));
   lFeedback = FixedPoint::convertToFP(mFeedback);
   lCutoff = FixedPoint::convertToFP(mCutoff);
 }
@@ -49,25 +44,21 @@ void Filter::calculateFeedback(){
 
 void Filter::calculateCutoff(){
   float newCutoff;
-  //newCutoff = mDialCutoff + mModCutoff + mLFOCutoff + mEnvelopeCutoff * mEnvelopeLevel;
   mCutoff += alpha * (mDialCutoff - mCutoff);
   newCutoff = mCutoff + mModCutoff + mLFOCutoff + 0.1 * mEnvelopeCutoff * mEnvDynamics;
   if(newCutoff >= 0.99){
-    newCutoff = 0.99; //Reduced the range to prevevt the Filter to become unstable.
+    newCutoff = 0.99; //Clamp the range to keep the filter stable.
   }
   else if(newCutoff <= 0.01){
-    newCutoff = 0.01; //Reduced the range to prevevt the Filter to become unstable.
+    newCutoff = 0.01; //Clamp the range to keep the filter stable.
   }
-   mCutoff = newCutoff;
+  mCutoff = newCutoff;
 }
 
 void Filter::setDialCutoff(int cutoff){
   DialCutoff = cutoff;
   Cutoff = DialCutoff;
   mDialCutoff = float(Cutoff) / 127.0; 
-  //mCutoff = mDialCutoff;
-  //calculateSmoothCutoff();
-  //calculateSmoothFeedback();
   calculateCutoff();
   calculateFeedback();
 }
@@ -76,21 +67,18 @@ void Filter::setModCutoff(int cutoff){
   ModCutoff = cutoff;
   mModCutoff = (float(ModCutoff) / 127.0);
   mCutoff = mModCutoff;
-  //calculateSmoothCutoff();
-  //calculateSmoothFeedback();
   calculateCutoff();
   calculateFeedback();
 }
 
 void Filter::setDialResonance(int resonance){
   mDialResonance = float(resonance) / 127.0;
-  if( mDialResonance >= 0.95){
-    mDialResonance = 0.95; //Reduced the range to prevevt the Filter to become unstable.
+  if(mDialResonance >= 0.95){
+    mDialResonance = 0.95; //Clamp the range to keep the filter stable.
   }
   else if(mDialResonance <= 0.01){
-    mDialResonance = 0.01; //Reduced the range to prevevt the Filter to become unstable.
+    mDialResonance = 0.01; //Clamp the range to keep the filter stable.
   }
-  //calculateSmoothFeedback();
   calculateFeedback();
 }
 
@@ -117,7 +105,6 @@ void Filter::setEnvelopeLevel(int level){
   else{
     mEnvelopeLevel = kmEnvLevel * (1.0 - float(127 - level) / 63.0);
   }
-  //mEnvDynamics = mEnvelopeLevel * (0.5 + mVelocity);
 }
 
 void Filter::trigger(){
@@ -169,21 +156,21 @@ float Filter::updateLFO(){
 float Filter::updateLFO(float cutoff){
   float lfo;
   lfo = LFO1.getSample();
- 
+
   if(lfo > 0.0){
-      cutoff = cutoff * (1.0 + lfo);
+    cutoff = cutoff * (1.0 + lfo);
   }
   else if(lfo < 0.0){
-      cutoff = cutoff * (1.0 + 0.5 * lfo);
-      }
+    cutoff = cutoff * (1.0 + 0.5 * lfo);
+  }
   return cutoff;
 }
 
 float Filter::update(float input){
-   s0 += mCutoff * (input - s0 + mFeedback * (s0 - s1));
-   s1 += mCutoff * (s0 - s1);
-   s2 += mCutoff * (s1 - s2);
-   s3 += mCutoff * (s2 - s3);
+  s0 += mCutoff * (input - s0 + mFeedback * (s0 - s1));
+  s1 += mCutoff * (s0 - s1);
+  s2 += mCutoff * (s1 - s2);
+  s3 += mCutoff * (s2 - s3);
   return s0;
 }
 
@@ -191,7 +178,6 @@ void Filter::updateBuffer(DoubleBuffer bufferIn, DoubleBuffer bufferOut){
   long input;
   while(bufferOut.isReadyToWrite()){
     input = FixedPoint::convertToFP(bufferIn.read());
-    //input = bufferIn.read();
     ls0 += FixedPoint::multiply(lCutoff, ((input - ls0) + FixedPoint::multiply(lFeedback, (ls0 - ls1))));
     ls1 += FixedPoint::multiply(lCutoff, (ls0 - ls1));
     ls2 += FixedPoint::multiply(lCutoff, (ls1 - ls2));

@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 //Oscillator.cpp - Last update: 10 Apr 2015 - Started: 12 Feb 2015.
 //-----------------------------------------------------------------------
-//10 Apr: Implemened Tuning LEDs.
+//10 Apr: Implemented Tuning LEDs.
 //-----------------------------------------------------------------------
 //3 Apr 2015: Created SynthTables that contains a number of tables used for
 //Waveform Generation, Anti-Aliasing BLEP correction and MIDI Pitch to Frequency.
@@ -10,28 +10,28 @@
 //2 Apr 2015: Implemented anti-aliasing Blep algorithm as a table.
 //-----------------------------------------------------------------------
 //29 Mar 2015: Implemented Note ON/OFF event management to replicate the behaviour of
-//monophonic keyboards where when two notes are presses simjultaneously the higher note
-//will play and when the highest key is released the heigher key immediately below
+//monophonic keyboards where when two notes are presses simultaneously the higher note
+//will play and when the highest key is released the higher key immediately below
 //that is still pressed will play.
 //-----------------------------------------------------------------------
 //16 Mar 2015: Changed XTREME waveform to implement Detuned and SubOscillator
-//Detuned detunes the a second SAW wavefor by +/- 100 Cents (or one semi-tone)
+//Detuned detunes the a second SAW waveform by +/- 100 Cents (or one semi-tone)
 //SubOscillator adds a third SAW waveform with frequency one octave below (P3 Bank 2)
 //or one fifth above (P5 Bank2). PULSE WIDTH is controlled by P4 Bank 2. The amount 
-//of XTREME SAW, PULSE and SUB can be controlled separatelly by P8, P9 and P10 Bank 2.
+//of XTREME SAW, PULSE and SUB can be controlled separately by P8, P9 and P10 Bank 2.
 //-----------------------------------------------------------------------
 //15 Mar 2015: Implemented XTREME SAW modulated by two LFOs. Still requires tuning,
 //and additional control, but it works.
 //-----------------------------------------------------------------------
 //13 Mar 2015: Resolved the "glitch" caused by high processing load. Initially 
 //I thought I had improved performance by replacing floating point with fixed
-//point calculation, but that was not the case, it got worse, and I referted
-//to floating point. Therefore, the Oscillator produces samples using frloating point.
-//Introduced a new waveshape oprion XTREME in addition to the existing ones. XTREME
+//point calculation, but that was not the case, it got worse, and I reverted
+//to floating point. Therefore, the Oscillator produces samples using floating point.
+//Introduced a new waveshape option XTREME in addition to the existing ones. XTREME
 //will implement all the features of paraphony (for the moment it just mixes SAW and
 //SQUARE_PULSE.
 //-----------------------------------------------------------------------
-//12 Mar 2015: Oscillator or Extreme Oscillator extands the original Oscillator 
+//12 Mar 2015: Oscillator or Extreme Oscillator extends the original Oscillator 
 //class with paraphony capabilities: SAW -> XSAW, SQUARE_PULSE (as before) and
 //an Overtone Oscillator.
 //-----------------------------------------------------------------------
@@ -152,12 +152,10 @@ Waveform Oscillator::getWaveform() {
 
 void Oscillator::setPulseAmount(float amount) {
   mPulseAmount = amount * 0.6;
-  //lPulseAmount =FixedPoint::convertToFP(mPulseAmount);
 }
 
 void Oscillator::setSawAmount(float amount) {
   mSawAmount = amount * 0.6;
-  //lSawAmount =FixedPoint::convertToFP(mSawAmount);
 }
 
 void Oscillator::setSawXfactor(float factor) {
@@ -168,22 +166,18 @@ void Oscillator::setSawXfactor(float factor) {
     factor = (-1.0 * factor);
     mSawXfactor = 1.0 / pow(oneCent, factor);
   }
-  //lSawXfactor =FixedPoint::convertToFP(mSawXfactor);
 }
 
 void Oscillator::setSubAmout(float amount) {
   mSubAmount = amount * 0.6;
-  //lSubAmount =FixedPoint::convertToFP(mSubAmount);
 }
 
 void Oscillator::setSubFactor(float factor) {
   mSubFactor = factor;
-  //lSubfactor =FixedPoint::convertToFP(mSubFactor);
 }
 
 void Oscillator::setFrequency(float frequency) {
   mFrequency = frequency;
-  //updateIncrement();
 }
 
 float Oscillator::getFrequency(){
@@ -203,7 +197,6 @@ void Oscillator::setPitch(int pitch){
   else{
     mPortamentoFactor = pow(mEndFrequency / mStartFrequency, 1.0 / mPortamentoIncrements);
   }
-  //updateIncrement();
 }
 
 void Oscillator::setTuning(int pitch){
@@ -281,8 +274,6 @@ float Oscillator::updatePitchBend(float frequency){
 void Oscillator::setPortamento(int portamento){
   mPortamento = portamento;
   if(mPortamento == 0){
-    //mFrequency = mEndFrequency;
-    //mStartFrequency = mPitchBend;
     mPortamentoTime = 0.0;
     mPortamentoIncrements = 1.0;
     mPortamentoFactor = 1.0;
@@ -295,8 +286,6 @@ void Oscillator::setPortamento(int portamento){
 
 void Oscillator::updatePortamento(){
   if(mPortamento == 0){
-    //mFrequency = mEndFrequency;
-    //mStartFrequency = mPitchBend;
     mPortamentoTime = 0.0;
     mPortamentoIncrements = 0;
     mPortamentoFactor = 1.0;
@@ -314,7 +303,6 @@ void Oscillator::updatePortamento(){
       }
     }
   }
-  //updateIncrement();
 }
 
 void Oscillator::setPulseWidth(float pulseWidth) {
@@ -323,13 +311,11 @@ void Oscillator::setPulseWidth(float pulseWidth) {
   lPulseThreshold = long(mPulseThreshold * 65536.0);
   mPulseOffset = 2.0 * (0.5 - mPulseWidth);
   lPulseOffset = FixedPoint::convertToFP(mPulseOffset);
-  //mPulseOffset = 1.2 * (0.5 - mPulseWidth); //Used when k = 0.6, i.e. waveshape amplitude = -/+ 0.6
 }
 
 void Oscillator::setSampleRate(float sampleRate) {
   mSampleRate = sampleRate;
   mIncrementFactor = mWaveTableSize / mSampleRate;
-  //updateIncrement();
 }
 
 void Oscillator::updateIncrement(float frequency) {
@@ -469,8 +455,6 @@ void Oscillator::updateNaiveBuffer(DoubleBuffer buffer){
 void Oscillator::updateBuffer(DoubleBuffer buffer){
   float saw1, saw2, saw3, saw4;
   float saw, pulse;
-  //long saw1, saw2, saw3, saw4;
-  //long saw, pulse;
   long phase1, phase2;
   switch (mWaveform) {
     case SINE:

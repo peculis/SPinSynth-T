@@ -1,22 +1,13 @@
 //---------------------------------------------------
-//Amplifier.cpp - Last update: 19 Mar 2015 - Started: 25 Feb 2015.
+//EnvelopeGenerator.cpp - Last update: 19 Mar 2015 - Started: 25 Feb 2015.
 //---------------------------------------------------
 //19 Mar 2015: Moved the Note ON LED to the EnvelopeGenerator Class.
 //---------------------------------------------------
-//09 Mar 2015: Calibrated the constants to define offset Xo and coefficiet Cf
+//09 Mar 2015: Calibrated the constants to define offset Xo and coefficient Cf
 //as suggested by Will Pirkle's book. The Envelope Generator is working fine,
 //although further adjustments may be needed.
 //---------------------------------------------------
-//06 Mar 2015: Implemented updateBuffer using Double Buffer mechanism.
-//updateBuffer calculates the fileter using Fixed Point Integer numbers.
-//---------------------------------------------------
-//05 Mar 2015: Implemented the VA Filter with Fixed Point numbers as long integer.
-//See lUpdate(long input) and the constants in SynthUtilities.h.
-//---------------------------------------------------
-//Implementes a Virtual Analog (VA) Filter with the following features:
-//24DB per octave; Cuttof and Resonance control and ADSR Envelope
-//controlling the Cuttof frequency.
-//This Filter is based on Martin Finke's Filter: Making Audio Plugins Part 13
+//EnvelopeGenerator calculates ADSR control values used by the Filter and Amplifier.
 //-----------------------------------------------------------
 
 #include <Arduino.h>

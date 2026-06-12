@@ -7,15 +7,13 @@
 //amount of Envelope Amplitude Modulation.
 //------------------------------------------------------------------------------
 //06 Mar 2015: Implemented updateBuffer using Double Buffer mechanism.
-//updateBuffer calculates the fileter using Fixed Point Integer numbers.
+//updateBuffer applies the amplifier envelope using Fixed Point integer numbers.
 //---------------------------------------------------
-//05 Mar 2015: Implemented the VA Filter with Fixed Point numbers as long integer.
-//See lUpdate(long input) and the constants in SynthUtilities.h.
+//05 Mar 2015: Implemented the VA Amplifier with Fixed Point numbers as long integer.
+//See updateBuffer() and the constants in SynthUtilities.h.
 //---------------------------------------------------
-//Implementes a Virtual Analog (VA) Filter with the following features:
-//24DB per octave; Cuttof and Resonance control and ADSR Envelope
-//controlling the Cuttof frequency.
-//This Filter is based on Martin Finke's Filter: Making Audio Plugins Part 13
+//Implements a Virtual Analog (VA) Amplifier with master volume, velocity response,
+//and ADSR envelope amplitude control.
 //-----------------------------------------------------------
 
 #include "Amplifier.h"

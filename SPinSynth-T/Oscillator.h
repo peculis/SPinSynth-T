@@ -8,28 +8,28 @@
 //2 Apr 2015: Implemented anti-aliasing Blep algorithm as a table.
 //-----------------------------------------------------------------------
 //29 Mar 2015: Implemented Note ON/OFF event management to replicate the behaviour of
-//monophonic keyboards where when two notes are presses simjultaneously the higher note
-//will play and when the highest key is released the heigher key immediately below
+//monophonic keyboards where when two notes are presses simultaneously the higher note
+//will play and when the highest key is released the higher key immediately below
 //that is still pressed will play.
 //-----------------------------------------------------------------------
 //16 Mar 2015: Changed XTREME waveform to implement Detuned and SubOscillator
-//Detuned detunes the a second SAW wavefor by +/- 100 Cents (or one semi-tone)
+//Detuned detunes the a second SAW waveform by +/- 100 Cents (or one semi-tone)
 //SubOscillator adds a third SAW waveform with frequency one octave below (P3 Bank 2)
 //or one fifth above (P5 Bank2). PULSE WIDTH is controlled by P4 Bank 2. The amount 
-//of XTREME SAW, PULSE and SUB can be controlled separatelly by P8, P9 and P10 Bank 2.
+//of XTREME SAW, PULSE and SUB can be controlled separately by P8, P9 and P10 Bank 2.
 //-----------------------------------------------------------------------
 //15 Mar 2015: Implemented XTREME SAW modulated by two LFOs. Still requires tuning,
 //and additional control, but it works.
 //-----------------------------------------------------------------------
 //13 Mar 2015: Resolved the "glitch" caused by high processing load. Initially 
 //I thought I had improved performance by replacing floating point with fixed
-//point calculation, but that was not the case, it got worse, and I referted
-//to floating point. Therefore, the Oscillator produces samples using frloating point.
-//Introduced a new waveshape oprion XTREME in addition to the existing ones. XTREME
+//point calculation, but that was not the case, it got worse, and I reverted
+//to floating point. Therefore, the Oscillator produces samples using floating point.
+//Introduced a new waveshape option XTREME in addition to the existing ones. XTREME
 //will implement all the features of paraphony (for the moment it just mixes SAW and
 //SQUARE_PULSE.
 //-----------------------------------------------------------------------
-//12 Mar 2015: Oscillator or Extreme Oscillator extands the original Oscillator 
+//12 Mar 2015: Oscillator or Extreme Oscillator extends the original Oscillator 
 //class with paraphony capabilities: SAW -> XSAW, SQUARE_PULSE (as before) and
 //an Overtone Oscillator.
 //-----------------------------------------------------------------------
@@ -148,10 +148,7 @@ private:
   void  updateIncrement(float frequency);
   float* generateSineWaveTable(int size);
   float* generateSawWaveTable(int size);
-  // float* generateBlepRisingTable(int size);
-  // float* generateBlepFallingTable(int size);
   float getSawSample(long phase, long inc);
-  //long getSawSample(long phase, long inc);
   void updatePortamento();
   float updateTuning(float frequency);
   float updatePitchBend(float frequency);
