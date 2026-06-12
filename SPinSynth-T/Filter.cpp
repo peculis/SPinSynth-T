@@ -25,6 +25,7 @@
 //-----------------------------------------------------------
 
 #include "Filter.h"
+#include <math.h>
 
 void Filter::calculateFeedback(){
   float newResonance;
@@ -58,7 +59,11 @@ void Filter::calculateCutoff(){
 void Filter::setDialCutoff(int cutoff){
   DialCutoff = cutoff;
   Cutoff = DialCutoff;
-  mDialCutoff = float(Cutoff) / 127.0; 
+  float normalizedCutoff = float(Cutoff) / 127.0;
+
+  // Exponential mapping gives finer control over low cutoff values.
+
+  mDialCutoff = 0.01 * pow(0.99 / 0.01, normalizedCutoff);
   calculateCutoff();
   calculateFeedback();
 }
@@ -99,11 +104,18 @@ void Filter::setRelease(int release){
 }
 
 void Filter::setEnvelopeLevel(int level){
+  float envelopeLevel;
+
+  // Curved bipolar response preserves inverted and normal envelope control while
+  // giving finer adjustment near the zero-envelope center.
+
   if(level <= 63){
-    mEnvelopeLevel = kmEnvLevel * ((float(level) / 63.0) - 1.0);
+    envelopeLevel = 1.0 - float(level) / 63.0;
+    mEnvelopeLevel = -kmEnvLevel * envelopeLevel * envelopeLevel;
   }
   else{
-    mEnvelopeLevel = kmEnvLevel * (1.0 - float(127 - level) / 63.0);
+    envelopeLevel = 1.0 - float(127 - level) / 63.0;
+    mEnvelopeLevel = kmEnvLevel * envelopeLevel * envelopeLevel;
   }
 }
 
