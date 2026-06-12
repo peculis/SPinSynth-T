@@ -40,7 +40,6 @@ float* LowFrequencyOscillator::generateSawWaveTable(int size) {
 
 void LowFrequencyOscillator::setWaveform(LFOwaveform waveform) {
   mWaveform = waveform;
-  //Serial.println("Waveform ");
 }
 
 LFOwaveform LowFrequencyOscillator::getWaveform() {
@@ -50,8 +49,6 @@ LFOwaveform LowFrequencyOscillator::getWaveform() {
 void LowFrequencyOscillator::setFrequency(float frequency) {
   mFrequency = frequency;
   updateIncrement(frequency);
-  //Serial.print("LFO Rate = "); 
-  //Serial.println(frequency);
 }
 
 float LowFrequencyOscillator::getFrequency(){
@@ -60,8 +57,6 @@ float LowFrequencyOscillator::getFrequency(){
 
 void LowFrequencyOscillator::setAmplitude(float amplitude) {
   mAmplitude = amplitude;
-  //Serial.print("LFO Amount = "); 
-  //Serial.println(amplitude);
 }
 
 float LowFrequencyOscillator::getAmplitude() {
@@ -86,7 +81,7 @@ void LowFrequencyOscillator::updateIncrement(float frequency) {
 }
 
 float LowFrequencyOscillator::getSample() {
-  float sample;
+  float sample = 0.0;
   lPhase += lPhaseIncrement;
     if(lPhase >= lWaveTableSize){
       lPhase = long(lPhase - lWaveTableSize);

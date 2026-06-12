@@ -40,7 +40,6 @@ void EnvelopeGenerator::setUpdateRate(float updateRate){
 
 void EnvelopeGenerator::setTrigger(){
   mTrigger = ON;
-  //Serial.println("Envelope Trigger ON");
 }
 
 void EnvelopeGenerator::setGateON(){
@@ -49,7 +48,6 @@ void EnvelopeGenerator::setGateON(){
     mGate = ON;
    digitalWrite(LED, HIGH);
   }
-  //Serial.println("Envelope Note ON");
 }
 
 void EnvelopeGenerator::setGateOFF(){
@@ -58,58 +56,29 @@ void EnvelopeGenerator::setGateOFF(){
     mGate = OFF;
    digitalWrite(LED, LOW);
   }
-  //Serial.println("Envelope Note OFF");
 }
 
 void EnvelopeGenerator::setAttack(int attack){
   mAttack = float(attack + 1) * 10.0;
   mAttackCf = exp(ECOA / mAttack);
   mAttackXo = (1.0 + TCOA) * (1.0 - mAttackCf);
-  /*
-  Serial.print("Attack ");
-  Serial.print(mAttack);
-  Serial.print(" Xo= ");
-  Serial.print(mAttackXo);
-  Serial.print(" Cf= ");
-  Serial.println(mAttackCf);
-  */
 }
 
 void EnvelopeGenerator::setDecay(int decay){
   mDecay = float(decay) * 100.0 +1.0;
   mDecayCf = exp(ECODR / mDecay);
   mDecayXo = (mSustain - TCODR) * (1.0 - mDecayCf);
-  /*
-  Serial.print("Decay ");
-  Serial.print(mDecay);
-  Serial.print(" Xo= ");
-  Serial.print(mDecayXo);
-  Serial.print(" Cf= ");
-  Serial.println(mDecayCf);
-  */
 }
 
 void EnvelopeGenerator::setSustain(int sustain){
   mSustain = float(sustain) / 127.0;
   mDecayXo = (mSustain - TCODR) * (1.0 - mDecayCf);
-  /*
-  Serial.print("Sustain ");
-  Serial.println(mSustain);
-  */
 }
 
 void EnvelopeGenerator::setRelease(int release){
   mRelease = float(release + 1) * 100.0;
   mReleaseCf = exp(ECODR / mRelease);
   mReleaseXo = -TCODR * (1.0 - mReleaseCf);
-  /*
-  Serial.print("Release ");
-  Serial.print(mRelease);
-  Serial.print(" Xo= ");
-  Serial.print(mReleaseXo);
-  Serial.print(" Cf= ");
-  Serial.println(mReleaseCf);
-  */
 }
 
 void EnvelopeGenerator::setVolume(int volume){
@@ -160,16 +129,6 @@ float EnvelopeGenerator::update(){
       break; 
     }
   }
-  /*
-  if(mGate == ON){
-    mOutput = 1.0;
-  }
-  else{
-    mOutput = 0.0;
-  }
-  */
-  //Serial.print("Env output = ");
-  //Serial.println(mOutput);
   return mOutput;
 }
 

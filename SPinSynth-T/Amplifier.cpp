@@ -21,26 +21,18 @@
 #include "Amplifier.h"
 
 void Amplifier::setAttack(int attack){
-  //mAttack = attack / 127.0;
-  // Serial.println("Amp ATTACK");
   envelope.setAttack(attack);
 }
 
 void Amplifier::setDecay(int decay){
-  //mDecay = decay / 127.0;
-  // Serial.println("Amp DECAY");
   envelope.setDecay(decay);
 }
 
 void Amplifier::setSustain(int sustain){
-  //mSustain = sustain / 127.0;
-  // Serial.println("Amp sustain");
   envelope.setSustain(sustain);
 }
 
 void Amplifier::setRelease(int release){
-  //mRelease = release / 127.0;
-  // Serial.println("Amp RELEASE");
   envelope.setRelease(release);
 }
 
@@ -49,25 +41,15 @@ void Amplifier::setVolume(int volume){
   lVolume = FixedPoint::convertToFP(mVolume);
 }
 
-float Amplifier::update(float input){
-  return input;
-}
-
-long Amplifier::lUpdate(long input){
-  return input;
-}
-
 void Amplifier::update(){
   envelopeLevel = FixedPoint::convertToFP(envelope.update());
 }
 
 void Amplifier::trigger(){
-  // Serial.println("Amplifier Trigger");
   envelope.setTrigger();
 }
 
 void Amplifier::noteON(int pitch, int velocity){
-  // Serial.println("Amplifier Note ON");
   mPitch = pitch;
   mVelocity = float(velocity) / 127.0;
   lVelocity = FixedPoint::convertToFP(mVelocity + 0.1);
@@ -75,17 +57,8 @@ void Amplifier::noteON(int pitch, int velocity){
 }
 
 void Amplifier::noteOFF(int pitch, int velocity){
-  // Serial.println("Amplifier Note OFF");
   envelope.setGateOFF();
 }
-
-void Amplifier::updateBufferFloat(DoubleBuffer bufferIn, DoubleBuffer bufferOut){
-  float input;
-   while(bufferOut.isReadyToWrite()){
-    input = bufferIn.read();
-    bufferOut.write(input);
-  }
- }
 
 void Amplifier::updateBuffer(DoubleBuffer bufferIn, DoubleBuffer bufferOut){
   long input, level;

@@ -52,10 +52,7 @@ public:
    float alpha = blockTime / transitionTime; // about 0.097
    float update(float input);
    void update();
-   long lUpdate(long input);
-   void updateBufferFloat(DoubleBuffer bufferIn, DoubleBuffer bufferOut);
    void updateBuffer(DoubleBuffer bufferIn, DoubleBuffer bufferOut);
-   void setMode(FilterMode mode);
    void setDialCutoff(int cutoff);
    void setModCutoff(int cutoff);
    void setDialResonance(int resonance);
@@ -72,7 +69,6 @@ public:
    void noteON(int pitch, int velocity);
    void noteOFF(int pitch, int velocity);
    Filter():
-   mMode(LOWPASS),
    mCutoff(0.9),
    mResonance(0.0),
    s0(0.0),
@@ -83,13 +79,9 @@ public:
    };
    
 private:
-  FilterMode mMode;
   int mPitch;
   float mVelocity;
-  long lVelocity;
   long lCutoff;
-  long lEnvelopeCutoff;
-  long lResonance;
   long lFeedback;
   long ls0;
   long ls1;
@@ -110,17 +102,9 @@ private:
   float updateLFO(float cutoff);
   float updateLFO();
   EnvelopeGenerator envelope;
-  long envelopeLevel;
-  float mAttack = 1.0;
-  float mDecay = 0.0;
-  float mSustain = 1.0;
-  float mRelease = 0.0;
   const float kmEnvLevel = 0.5;
-  const long klEnvLevel = FixedPoint::convertToFP(kmEnvLevel);
   float mEnvDynamics;
-  long  lEnvDynamics;
   float mEnvelopeLevel = 0.0;
-  long lEnvelopeLevel = FixedPoint::convertToFP(mEnvelopeLevel);
   float s0;
   float s1;
   float s2;

@@ -28,12 +28,9 @@
 #include "Filter.h"
 
 void Filter::calculateFeedback(){
-  float xCutoff;
   float newResonance;
   //lCutoff = FixedPoint::convertToFP(mCutoff);
-  //lEnvelopeCutoff = lCutoff;
   //mEnvelopeCutoff = mCutoff;
-  //lResonance = FixedPoint::convertToFP(mResonance);
   //xCutoff = 0.9;
   newResonance = mResonance + alpha * (mDialResonance - mResonance);
   if(newResonance >= 0.95){
@@ -47,18 +44,11 @@ void Filter::calculateFeedback(){
   //mFeedback = double((mDialResonance + mDialResonance / (1.0 - (mCutoff))));
   lFeedback = FixedPoint::convertToFP(mFeedback);
   lCutoff = FixedPoint::convertToFP(mCutoff);
-  //lEnvelopeCutoff = lCutoff;
-  //lResonance = FixedPoint::convertToFP(mResonance);
-  //Serial.print("calculateResonance ");
-  //Serial.println(mResonance);
 }
 
 
 void Filter::calculateCutoff(){
   float newCutoff;
-  long tempEnvelopeLevel;
-  //tempEnvelopeLevel = FixedPoint::multiply(lEnvelopeLevel, klEnvLevel);
-  //lEnvelopeCutoff = lCutoff +  FixedPoint::multiply(tempEnvelopeLevel, envelopeLevel);
   //newCutoff = mDialCutoff + mModCutoff + mLFOCutoff + mEnvelopeCutoff * mEnvelopeLevel;
   mCutoff += alpha * (mDialCutoff - mCutoff);
   newCutoff = mCutoff + mModCutoff + mLFOCutoff + 0.1 * mEnvelopeCutoff * mEnvDynamics;
@@ -69,12 +59,6 @@ void Filter::calculateCutoff(){
     newCutoff = 0.01; //Reduced the range to prevevt the Filter to become unstable.
   }
    mCutoff = newCutoff;
-  //Serial.print("calculateCutoff ");
-  //Serial.println(mCutoff);
-}
-
-void Filter::setMode(FilterMode mode){
-  mMode = mode;
 }
 
 void Filter::setDialCutoff(int cutoff){
@@ -82,8 +66,6 @@ void Filter::setDialCutoff(int cutoff){
   Cutoff = DialCutoff;
   mDialCutoff = float(Cutoff) / 127.0; 
   //mCutoff = mDialCutoff;
-  Serial.print("DialCutoff ");
-  Serial.println(cutoff);
   //calculateSmoothCutoff();
   //calculateSmoothFeedback();
   calculateCutoff();
@@ -94,7 +76,6 @@ void Filter::setModCutoff(int cutoff){
   ModCutoff = cutoff;
   mModCutoff = (float(ModCutoff) / 127.0);
   mCutoff = mModCutoff;
-  //Serial.println(cutoff);
   //calculateSmoothCutoff();
   //calculateSmoothFeedback();
   calculateCutoff();
@@ -109,29 +90,23 @@ void Filter::setDialResonance(int resonance){
   else if(mDialResonance <= 0.01){
     mDialResonance = 0.01; //Reduced the range to prevevt the Filter to become unstable.
   }
-  //Serial.print("DialResonance ");
-  //Serial.println(resonance);
   //calculateSmoothFeedback();
   calculateFeedback();
 }
 
 void Filter::setAttack(int attack){
-  //mAttack = attack / 127.0;
   envelope.setAttack(attack);
 }
 
 void Filter::setDecay(int decay){
-  //mDecay = decay / 127.0;
   envelope.setDecay(decay);
 }
 
 void Filter::setSustain(int sustain){
-  //mSustain = sustain / 127.0;
   envelope.setSustain(sustain);
 }
 
 void Filter::setRelease(int release){
-  //mRelease = release / 127.0;
   envelope.setRelease(release);
 }
 
@@ -143,35 +118,24 @@ void Filter::setEnvelopeLevel(int level){
     mEnvelopeLevel = kmEnvLevel * (1.0 - float(127 - level) / 63.0);
   }
   //mEnvDynamics = mEnvelopeLevel * (0.5 + mVelocity);
-  //lEnvelopeLevel = FixedPoint::convertToFP(mEnvelopeLevel);
-  //Serial.print("Filter Envelope Level = ");
-  //Serial.println(mEnvelopeLevel);
 }
 
 void Filter::trigger(){
-  //Serial.print("Filter ");
   envelope.setTrigger();
 }
 
 void Filter::noteON(int pitch, int velocity){
-  //Serial.print("Filter ");
   mPitch = pitch;
   mVelocity = float(velocity) / 127.0;
-  //lVelocity = FixedPoint::convertToFP(mVelocity);
   mEnvDynamics = mEnvelopeLevel * (0.5 + mVelocity);
-  //Serial.print("Filter Envelope Dynamics = ");
-  //Serial.println(mEnvDynamics);
   envelope.setGateON();
 }
 
 void Filter::noteOFF(int pitch, int velocity){
-  //Serial.print("Filter ");
   envelope.setGateOFF();
 }
 
 void Filter::update(){
-  //envelopeLevel = FixedPoint::convertToFP(envelope.update());
-  //Serial.println("Filter update");
   mLFOCutoff = LFO1.getSample();
   mEnvelopeCutoff = envelope.update();
   calculateCutoff();
@@ -181,33 +145,21 @@ void Filter::update(){
 void Filter::setLFOrate(int rate){
   float LFOrate;
   LFOrate = float(rate) / 10.0;
-  //Serial.print("Filter ");
   LFO1.setFrequency(LFOrate);
-  //Serial.print("LFO Rate = "); 
-  //Serial.println(LFOrate);
 }
 
 void Filter::setLFOamount(int amount){
   float LFOamount;
   LFOamount = float(amount) / 511.0;
-  //Serial.print("Filter ");
   LFO1.setAmplitude(LFOamount);
-  //Serial.print("LFO Amount = "); 
-  //Serial.println(LFOamount);
 }
 
 void Filter::setLFOwaveform(LFOwaveform waveform){
-  float LFOamount;
-  //Serial.print("Filter ");
   LFO1.setWaveform(waveform);
-  //Serial.print("LFO Waveform = "); 
-  //Serial.println(waveform);
 }
 
 void Filter::setLFOpulsewidth(float pulsewidth){
   LFO1.setPulseWidth(pulsewidth);
-  //Serial.print("LFO Pulsewidth = "); 
-  //Serial.println(pulsewidth);
 }
 
 float Filter::updateLFO(){
@@ -234,26 +186,6 @@ float Filter::update(float input){
    s3 += mCutoff * (s2 - s3);
   return s0;
 }
-
-long Filter::lUpdate(long input){
-   ls0 += FixedPoint::multiply(lEnvelopeCutoff, ((input - ls0) + FixedPoint::multiply(lFeedback, (ls0 - ls1))));
-   ls1 += FixedPoint::multiply(lEnvelopeCutoff, (ls0 - ls1));
-   ls2 += FixedPoint::multiply(lEnvelopeCutoff, (ls1 - ls2));
-   ls3 += FixedPoint::multiply(lEnvelopeCutoff, (ls2 - ls3));
-  return ls0;
-}
-
-void Filter::updateBufferFloat(DoubleBuffer bufferIn, DoubleBuffer bufferOut){
-  float input;
-  while(bufferOut.isReadyToWrite()){
-    input =bufferIn.read();
-    s0 += mCutoff * (input - s0 + mFeedback * (s0 - s1));
-    s1 += mCutoff * (s0 - s1);
-    s2 += mCutoff * (s1 - s2);
-    s3 += mCutoff * (s2 - s3);
-    bufferOut.write(s0);
-  }
- }
 
 void Filter::updateBuffer(DoubleBuffer bufferIn, DoubleBuffer bufferOut){
   long input;

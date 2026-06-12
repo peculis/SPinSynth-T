@@ -53,26 +53,16 @@ void Oscillator::update(){
   if(frequency > 4190.0){
     frequency = 4190.0;
   }
-/*
-  if(frequency > 2093.0){
-    frequency = 2093.0;
-  }
-*/
-//Serial.println(frequency);
-updateIncrement(frequency);
+  updateIncrement(frequency);
 }
 
 
 void Oscillator::allocateKeyEvent(int pitch, int state, int velocity){
-  int newPitch;
-  //Serial.println("allocateKeyEvent");
    if(state == ON){
-     //Serial.println("allocateKeyEvent   ON");
      for(int k = 0; k < maxKeyEvents; k++){
        if(keyEvents[k].state == OFF){
          if(keyEvents[k].age < maxKeyEvents){
            keyEvents[k].age++;
-           //Serial.println("-------");
          }
        }
      }
@@ -83,35 +73,17 @@ void Oscillator::allocateKeyEvent(int pitch, int state, int velocity){
            keyEvents[k].pitch = pitch;
            keyEvents[k].state = ON;
            keyEvents[k].velocity = velocity;
-           /*
-           Serial.print("Allocate Note ON k = ");
-           Serial.print(k);
-           Serial.print(" age = ");
-           Serial.print(keyEvents[k].age);
-           Serial.print(" pitch = ");
-           Serial.println(keyEvents[k].pitch);
-           */
            k = maxKeyEvents;
          }
        }
      }
    }
    else if(state == OFF){
-     //Serial.println("allocateKeyEvent   OFF");
      for(int k = 0; k < maxKeyEvents; k++){
        if(keyEvents[k].pitch == pitch){
          if(keyEvents[k].state == ON){
            keyEvents[k].state = OFF;
            keyEvents[k].velocity = velocity;
-           /*
-           Serial.print("Allocate Note OFF k = ");
-           Serial.print(k);
-           Serial.print(" age = ");
-           Serial.print(keyEvents[k].age);
-           Serial.print(" pitch = ");
-           Serial.println(keyEvents[k].pitch);
-           */
-           //k = maxKeyEvents;
          }
        }
      }
@@ -122,14 +94,11 @@ int Oscillator::getPitch(){
    int newPitch = -1;
    for(int k = 0; k < maxKeyEvents; k++){
      if(keyEvents[k].state == ON){
-       //Serial.println("++++");
        if(keyEvents[k].pitch > newPitch){
          newPitch = keyEvents[k].pitch;
        }
      }
    }
-   //Serial.print("NEW PITCH = ");
-   //Serial.println(newPitch);
    return newPitch;
 }
 
@@ -239,8 +208,6 @@ void Oscillator::setPitch(int pitch){
 
 void Oscillator::setTuning(int pitch){
   mTuning = int(pitch - 63);
-  //Serial.print("Master Tuning = "); 
-  //Serial.println(mTuning);
 }
 
 void Oscillator::setPitchBend(int bend){
@@ -251,35 +218,26 @@ void Oscillator::setLFOrate(int rate){
   float LFOrate;
   LFOrate = float(rate) / 10.0;
   LFO1.setFrequency(LFOrate);
-  //Serial.print("LFO Rate = "); 
-  //Serial.println(LFOrate);
 }
 
 void Oscillator::setLFOamount(int amount){
   float LFOamount;
   LFOamount = float(amount) / 127.0;
   LFO1.setAmplitude(LFOamount);
-  //Serial.print("LFO Amount = "); 
-  //Serial.println(LFOamount);
 }
 
 void Oscillator::setLFOwaveform(LFOwaveform waveform){
-  float LFOamount;
   LFO1.setWaveform(waveform);
-  //Serial.print("LFO Waveform = "); 
-  //Serial.println(waveform);
 }
 
 void Oscillator::setLFOpulsewidth(float pulsewidth){
   LFO1.setPulseWidth(pulsewidth);
-  //Serial.print("LFO Pulsewidth = "); 
-  //Serial.println(pulsewidth);
 }
 
 float Oscillator::updateLFO(float frequency){
-  float lfo, sawPhase2, sawPhase3;
+  float lfo;
   lfo = LFO1.getSample();
- 
+
   if(lfo > 0.0){
       frequency = frequency * (1.0 + lfo);
   }
@@ -377,71 +335,44 @@ void Oscillator::setSampleRate(float sampleRate) {
 void Oscillator::updateIncrement(float frequency) {
   mPhaseIncrement = frequency * mIncrementFactor;
   lPhaseIncrement = long(mPhaseIncrement * 65536.0);
-  
+
   mOffPhaseIncrement = mPhaseIncrement * mSawXfactor;
   lOffPhaseIncrement = long(mOffPhaseIncrement * 65536.0);
-  
+
   mSubPhaseIncrement = mPhaseIncrement * mSubFactor;
   lSubPhaseIncrement = long(mSubPhaseIncrement * 65536.0);
 }
 
+// Active saw generator used by SAW, SQUARE_PULSE, and XTREME.
+// Applies PolyBLEP correction around the waveform discontinuity to reduce aliasing
+// while keeping the oscillator inexpensive enough for the Teensy audio interrupt path.
+// PolyBLEP is effective for the saw/pulse edges used here, but it is not a complete
+// band-limiting solution for every high-frequency harmonic combination.
 
 float Oscillator::getSawSample(long phase, long inc){
   float ft;
   float sample;
-  int blep;
-  sample = mSawWaveTable[int(phase >> 16)]; 
-    //
-    //Uncomment the return below to skip Anti-Alyasing correction.
-    // return sample;
-    if(phase < inc){
-    //  sample = sample - poly_Blep_Fall(phase, inc);
-      
-      blep = (phase << 7 ) / inc;
-      //return sample - blepFallingTable[blep];
-      
-      //PolyBlep - comment the return above to execute PolyBlep
-      ft = float(phase) / float(inc);
-      return (sample - ((ft + ft) - (ft * ft) - 1.0));
-     
-    }
-    else if(phase > (lMaxPhase - inc)){
-    //  sample = sample - poly_Blep_Rise(phase, inc);
-      
-      blep = ((phase - lMaxPhase) << 7 ) / inc;
-      //return sample - blepRisingTable[blep];
-      
-      //PolyBlep - comment the return above to execute PolyBlep
-      ft = (float(phase) - fMaxPhase) / float(inc);
-      return (sample - ((ft * ft) + (ft + ft) + 1.0));
-    } 
-  return sample;
-}
-  
-
-float Oscillator::getSawSamplePolyBlep(long phase, long inc){
-  float ft;
-  float sample;
   sample = mSawWaveTable[int(phase >> 16)];
-    if(phase < inc){
-      //sample = sample - poly_Blep_Fall(phase, inc);
-      ft = float(phase) / float(inc);
-      return (sample - ((ft + ft) - (ft * ft) - 1.0));
-    }
-    else if(phase > lMaxPhase - inc){
-      //sample = sample - poly_Blep_Rise(phase, inc);
-      ft = (float(phase) - fMaxPhase) / float(inc);
-      return (sample - ((ft * ft) + (ft + ft) + 1.0));
-    } 
+  if(phase < inc){
+    ft = float(phase) / float(inc);
+    return (sample - ((ft + ft) - (ft * ft) - 1.0));
+  }
+  else if(phase > (lMaxPhase - inc)){
+    ft = (float(phase) - fMaxPhase) / float(inc);
+    return (sample - ((ft * ft) + (ft + ft) + 1.0));
+  }
   return sample;
-  //return FixedPoint::convertToFP(sample);
 }
+
+// Historical comparison path: generates raw wavetable saw and threshold pulse shapes
+// without PolyBLEP correction. Keep this available for listening/scope comparisons
+// against getSample()/updateBuffer(), which use getSawSample() with PolyBLEP.
 
 float Oscillator::getNaiveSample() {
   lPhase += lPhaseIncrement;
-    if(lPhase >= lWaveTableSize){
-      lPhase = long(lPhase - lWaveTableSize);
-    }
+  if(lPhase >= lWaveTableSize){
+    lPhase = long(lPhase - lWaveTableSize);
+  }
   switch (mWaveform) {
     case SINE:
       mNextSample = mSineWaveTable[int(lPhase >> 16)];
@@ -450,13 +381,15 @@ float Oscillator::getNaiveSample() {
       mNextSample = mSawWaveTable[int(lPhase >> 16)];
       break;
     case SQUARE_PULSE:
-     if(lPhase >= lPulseThreshold){
-          mNextSample = -kx;
-     }
-     else{
-          mNextSample = kx;
-     }
-     break;
+      if(lPhase >= lPulseThreshold){
+        mNextSample = -kx;
+      }
+      else{
+        mNextSample = kx;
+      }
+      break;
+    case XTREME:
+      break;
   }
   return (mNextSample);
 }
@@ -464,9 +397,9 @@ float Oscillator::getNaiveSample() {
 float Oscillator::getSample() {
   float phase2;
   lPhase += lPhaseIncrement;
-    if(lPhase >= lWaveTableSize){
-      lPhase = long(lPhase - lWaveTableSize);
-    }
+  if(lPhase >= lWaveTableSize){
+    lPhase = long(lPhase - lWaveTableSize);
+  }
   switch (mWaveform) {
     case SINE:
       mNextSample = mSineWaveTable[int(lPhase >> 16)];
@@ -482,13 +415,19 @@ float Oscillator::getSample() {
       if(phase2 >= lWaveTableSize){
         phase2 = phase2 - lWaveTableSize;
       }
-     mNextSample = (getSawSample(lPhase, lPhaseIncrement) - getSawSample(phase2, lPhaseIncrement)) - mPulseOffset;
-     break;
+      mNextSample = (getSawSample(lPhase, lPhaseIncrement) - getSawSample(phase2, lPhaseIncrement)) - mPulseOffset;
+      break;
+    case XTREME:
+      break;
   }
   return (mNextSample);
 }
 
-  void Oscillator::updateNaiveBuffer(DoubleBuffer buffer){
+// Buffer-based version of the naive comparison path. It deliberately writes raw
+// wavetable saw and threshold pulse samples without PolyBLEP correction, so the
+// audible/scope difference against updateBuffer() can be checked when needed.
+
+void Oscillator::updateNaiveBuffer(DoubleBuffer buffer){
   switch (mWaveform) {
     case SINE:
       while(buffer.isReadyToWrite()){
@@ -505,18 +444,15 @@ float Oscillator::getSample() {
         if(lPhase >= lWaveTableSize){
           lPhase = long(lPhase - lWaveTableSize);
         }
-        //Without Anti-Aliasing PolyBlep correction
         buffer.write(mSawWaveTable[int(lPhase >> 16)]);
       }
       break;
     case SQUARE_PULSE:
-      //for(int i = 0; i < nSamples; i++){
       while(buffer.isReadyToWrite()){
-       lPhase += lPhaseIncrement;
+        lPhase += lPhaseIncrement;
         if(lPhase >= lWaveTableSize){
           lPhase = long(lPhase - lWaveTableSize);
         }
-        //Without Anti-Aliasing PolyBlep correction
         if(lPhase >= lPulseThreshold){
           buffer.write(-kx);
         }
@@ -525,17 +461,17 @@ float Oscillator::getSample() {
         }
       }
       break;
-    }
+    case XTREME:
+      break;
   }
-    
- void Oscillator::updateBuffer(DoubleBuffer buffer){
+}
+
+void Oscillator::updateBuffer(DoubleBuffer buffer){
   float saw1, saw2, saw3, saw4;
   float saw, pulse;
   //long saw1, saw2, saw3, saw4;
   //long saw, pulse;
-  long phase1, phase2, phase3, phase4, phase5;
-  float* writeBuffer;
-  int nSamples;
+  long phase1, phase2;
   switch (mWaveform) {
     case SINE:
       while(buffer.isReadyToWrite()){
@@ -552,86 +488,79 @@ float Oscillator::getSample() {
         if(lPhase >= lWaveTableSize){
           lPhase = long(lPhase - lWaveTableSize);
         }
-        //With Anti-Aliasing PolyBlep correction
-        //saw = getSawSample(lPhase, lPhaseIncrement;
+
+        // SAW uses the active PolyBLEP-corrected saw path.
+
         buffer.write(getSawSample(lPhase, lPhaseIncrement));
-        //buffer.write(FixedPoint::convertToFP(getSawSample(lPhase, lPhaseIncrement)));
-        //Without Anti-Aliasing PolyBlep correction
-        //buffer.write(mSawWaveTable[int(lPhase >> 16)]);
       }
       break;
     case SQUARE_PULSE:
       while(buffer.isReadyToWrite()){
-       lPhase += lPhaseIncrement;
+        lPhase += lPhaseIncrement;
         if(lPhase >= lWaveTableSize){
           lPhase = long(lPhase - lWaveTableSize);
-        }        
-        ///*
-        //---------------------------------------------------------
-        //This code is used when SQUARE-PULSE is derived from SAW
-        //With Anti-Aliasing PolyBlep correction
-        //---------------------------------------------------------
+        }
+
+        // SQUARE_PULSE is built by subtracting two PolyBLEP-corrected saws.
+        // phase2 marks the second edge of the pulse; moving it changes pulse width.
+        // Because both edges come from getSawSample(), the hard transitions are
+        // softened by PolyBLEP instead of using a raw threshold square wave.
+
         phase1 = lPhase;
         phase2 = lPhase + lPulseThreshold;
-        
+
         if(phase2 >= lWaveTableSize){
           phase2 = phase2 - lWaveTableSize;
         }
-        ///*
         saw1 = getSawSample(phase1, lPhaseIncrement);
         saw2 = getSawSample(phase2, lPhaseIncrement);
         pulse = (saw1 - saw2) - mPulseOffset;
         buffer.write(pulse);
-        //buffer.write(FixedPoint::convertToFP(pulse));
-        //*/
-        /*
-        saw1 = FixedPoint::convertToFP(getSawSample(phase1, lPhaseIncrement));
-        saw2 = FixedPoint::convertToFP(getSawSample(phase2, lPhaseIncrement));
-        pulse = (saw1 - saw2) - lPulseOffset;
-        buffer.write(pulse);
-        */
       }
       break;
     case XTREME:
-      //for(int i = 0; i < nSamples; i++){
       while(buffer.isReadyToWrite()){
-       lPhase += lPhaseIncrement;
-       if(lPhase >= lWaveTableSize){
-         lPhase = long(lPhase - lWaveTableSize);
-       }  
-       //Update Offtune Oscillator
-       lOffPhase += lOffPhaseIncrement;
-       if(lOffPhase >= lWaveTableSize){
+        lPhase += lPhaseIncrement;
+        if(lPhase >= lWaveTableSize){
+          lPhase = long(lPhase - lWaveTableSize);
+        }
+
+        // Update Offtune Oscillator
+
+        lOffPhase += lOffPhaseIncrement;
+        if(lOffPhase >= lWaveTableSize){
           lOffPhase = long(lOffPhase - lWaveTableSize);
-       }
-       //Update Sub Oscillator
-       lSubPhase += lSubPhaseIncrement;
-       if(lSubPhase >= lWaveTableSize){
+        }
+
+        // Update Sub Oscillator
+
+        lSubPhase += lSubPhaseIncrement;
+        if(lSubPhase >= lWaveTableSize){
           lSubPhase = long(lSubPhase - lWaveTableSize);
-       } 
-        ///*
-        //---------------------------------------------------------
-        //This code is used when SQUARE-PULSE is derived from SAW
-        //With Anti-Aliasing PolyBlep correction
-        //---------------------------------------------------------
+        }
+
+        // XTREME combines three oscillator components: main saw, detuned saw,
+        // and sub saw, plus a pulse derived from the main saw pair. Each saw
+        // component uses getSawSample(), so the same PolyBLEP edge correction is
+        // applied before the components are mixed by their amount controls.
+
         phase1 = lPhase;
         phase2 = lPhase + lPulseThreshold;
         if(phase2 >= lWaveTableSize){
           phase2 = phase2 - lWaveTableSize;
         }
-       
+
         saw1 = getSawSample(phase1, lPhaseIncrement);
         saw2 = getSawSample(phase2, lPhaseIncrement);
-       
+
         saw3 = getSawSample(lOffPhase, lOffPhaseIncrement);
         saw4 = getSawSample(lSubPhase, lSubPhaseIncrement);
-        
+
         saw = saw1 + saw3;
         pulse = (saw1 - saw2) - mPulseOffset;
-  
+
         buffer.write(mSawAmount * saw + mPulseAmount * pulse + mSubAmount * saw4);
-        
       }
       break;
     }
- }
+}

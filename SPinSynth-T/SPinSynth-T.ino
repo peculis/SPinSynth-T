@@ -171,17 +171,6 @@ enum ModWheelFunction {
  const float OSC_PULSE_WIDTH_CC_DIVISOR = 317.0;
  const float SUB_FACTOR_BASE = 0.5;
 
- float sampleRate = SAMPLE_RATE; // Sample Rate = 44.1KHz
- const int waveTableSize = 2048;
- float maxAmplitude = 4097.0;
- float halfMaxAmplitude = maxAmplitude * 0.4;
- float amplitudeDCO1 = 1.0;
- float deg;
- float rad;
- int sineWave;
- long startTime;
- long duration;
- 
  int outputBufferSize = AUDIO_BUFFER_SIZE;
  
  DoubleBuffer oscillatorBuffer;
@@ -192,31 +181,12 @@ enum ModWheelFunction {
  
  int updatePhase = 0;
  
- float* oscillatorBuffer0;
- float* oscillatorBuffer1;
- float* filterBuffer0;
- float* filterBuffer1;
- float* outputBuffer;  //Buffer to be read by the DAC output.
- float* writeBuffer;   //Buffer to be written by the Oscillator.getNextBuffer.
- boolean getNextOscillatorBuffer = FALSE;
  boolean synchDAC = FALSE;
  int outputSample = 0;
- 
- float minFrequency = 22.0; //minimum frequency is 40Hz
- float maxFrequency = 2200.0; //maximum frequency is 6KHz
- float frequency = minFrequency; // start at minFrequency
- 
- float frequencyIncrement = 1.0;
- float frequencyCount = 0.0;
- 
- float sampleIncrement;
- float sampleIncrementFactor = float(waveTableSize) / sampleRate;
- unsigned long kp = waveTableSize * 4096;
- 
+  
  //This is new for Teensy
  
  IntervalTimer updatevaOscillatorTimer;
- IntervalTimer updateDCO;
  IntervalTimer updateControls;
 
  // Global MIDI controls
@@ -284,17 +254,6 @@ enum ModWheelFunction {
 
  //---------------- MIDI Callbacks -------------------------------
  void HandleNoteOn(byte channel, byte pitch, byte velocity) { 
-  // int newPitch;
-  /*
-  Serial.print("MIDI NoteON ");
-  Serial.print(" Channel ");
-  Serial.print(channel);
-  Serial.print(" Note ");
-  Serial.print(pitch);
-  Serial.print(" Velocity ");
-  Serial.println(velocity);
-  */
-  
   vaOscillator.noteON(int(pitch), int(velocity));
   vaFilter.trigger();
   vaFilter.noteON(int(pitch), int(velocity));
@@ -304,16 +263,6 @@ enum ModWheelFunction {
 
 //RP: I created this Callback
 void HandleNoteOff(byte channel, byte pitch, byte velocity){
-  // int newPitch = -1;
-  /*
-  Serial.print("MIDI NoteOFF ...");
-  Serial.print(" Channel ");
-  Serial.print(channel);
-  Serial.print(" Note ");
-  Serial.print(pitch);
-  Serial.print(" Velocity ");
-  Serial.println(velocity);
-  */
   vaOscillator.noteOFF(int(pitch), int(velocity));
   vaFilter.noteOFF(int(pitch), int(velocity));
   vaAmplifier.noteOFF(int(pitch), int(velocity));
@@ -409,18 +358,6 @@ void setModWheelFunction(byte value) {
 //a Control like Filter Frequency and Resonance, and Envelope Parameters (ADSR).
 void HandleControlChange(byte channel, byte number, byte value) { 
   float mValue, pulseW;
-  char* waveshape = "";
-  //int intValue;
-  //intValue = int(value);
-/*
-  Serial.print("MIDI ControlChange ");
-  Serial.print(" Channel ");
-  Serial.print(channel);
-  Serial.print(" Control #");
-  Serial.print(number);
-  Serial.print(" Value ");
-  Serial.println(value);
-*/
   switch (number){
     case CC_MOD_WHEEL: //Modulation Wheel is controlling LFO Amount for Oscillator frequency
       switch (mModWheelFunction){
@@ -527,95 +464,25 @@ void HandleControlChange(byte channel, byte number, byte value) {
       break;
     case CC_PORTAMENTO:
       vaOscillator.setPortamento(int(value));
-      /*
-      Serial.print("Control Change #");
-      Serial.print(number);
-      Serial.print(" Channel ");
-      Serial.print(channel);
-      Serial.print(" : Portamento ");
-      Serial.print(waveshape);
-      Serial.print(" ");
-      Serial.println(value);
-      */
       break;  
     default:
-      /*
-      Serial.print("Control Change #");
-      Serial.print(number);
-      Serial.print(" Channel ");
-      Serial.print(channel);
-      Serial.print(" : UNASSIGNED ");
-      Serial.println(value);
-      */
       break;
-    //break;
   }
-  /*
-  Serial.print("MIDI ControlChange ");
-  Serial.print(" Channel ");
-  Serial.print(channel);
-  Serial.print(" Control #");
-  Serial.print(number);
-  Serial.print(" Value ");
-  Serial.println(value);
-  */
 }
 
 //RP: I created this Callback
 void HandlePitchBend(byte channel, int bend) { 
   vaOscillator.setPitchBend(bend);
-  /*
-  Serial.print("MIDI PitchBend ");
-  Serial.print(" Channel ");
-  Serial.print(channel);
-  Serial.print(" Bend ");
-  Serial.println(bend);
-  */
-  //vaOscillator.setFrequency(mFrequency);
 }
   
 //----------------- End MIDI Callbacks -------------------------
 
-//startBuffer() initiallises the "write" and "output" buffers.
- void startOscillatorBuffer(){
-   outputSample = 0;
-   writeBuffer = oscillatorBuffer0;
-   outputBuffer = oscillatorBuffer1;
-   getNextOscillatorBuffer = TRUE;
- }
- 
- //swapBuffer() swaps the "write" and "output" buffers.
- void swapOscillatorBuffer(){
-   float* tempBuffer;
-   outputSample = 0;
-   tempBuffer = outputBuffer;
-   outputBuffer = writeBuffer;
-   writeBuffer = tempBuffer;
-   getNextOscillatorBuffer = TRUE;
- }
- 
  // outputBufferedDAC() sends datat from the outputBuffer to the DAC.
  //The outputBuffer is filled by the Oscillator with AUDIO_BUFFER_SIZE samples
  //in one call to vaOscillator.getNextBuffer(buffer, bufferSize).
  void outputBufferedDAC(){
-   // float oscillatorSample;
-   // float filterSample;
-   // long lFilterSample;
    long lAmplifierSample;
    int dacOutput;
-   // float* readBuffer;
-   /*
-   outputSample++;
-   if(outputSample == AUDIO_BUFFER_SIZE){
-     swapOscillatorBuffer();
-   }
-   oscillatorSample = outputBuffer[outputSample];
-   */
-  
-   //readBuffer = oscillatorBuffer.getReadBuffer();
-   //oscillatorSample = readBuffer[outputSample];
-   //oscillatorSample = outputBuffer[outputSample];
-   
    outputSample++;
    if(outputSample == AUDIO_BUFFER_SIZE){
      oscillatorBuffer.swapBuffer();
@@ -623,101 +490,23 @@ void HandlePitchBend(byte channel, int bend) {
      outputSample = 0;
      synchDAC = TRUE;
    }
-  
-   //oscillatorSample = oscillatorBuffer.read();
-  
-   //filterSample = vaFilter.update(oscillatorSample);
-   
-   //lFilterSample = vaFilter.lUpdate(long(FixedPoint::convertToFP(oscillatorSample)));
-   ///dacOutput = int(halfMaxAmplitude * (1.25 + float(lFilterSample) / 65536.0));
-   
-   //lFilterSample = filterBuffer.read();
-   //dacOutput = 2048 + ((lFilterSample >> 5));
-   
    lAmplifierSample = amplifierBuffer.read();
    dacOutput = DAC_MIDPOINT + (lAmplifierSample >> DAC_OUTPUT_SHIFT);
-   
-   
-   //filterSample = filterBuffer.read();
-   //lFilterSample = filterSample * floatFactor;
-   
-   //dacOutput = 2048 + ((lFilterSample >> 5));
-   
-   //filterSample = oscillatorSample;
-   //dacOutput = int(halfMaxAmplitude * (1.25 + filterSample));
-   //dacOutput = int(halfMaxAmplitude * (1.0 + outputBuffer[outputSample] * amplitudeDCO1));
+
    analogWrite(AUDIO_OUTPUT_PIN, dacOutput);
  }
- 
- //updateSingleDAC() is the interrupt callback used to update one single sample
- //obtained directly from the Oscillator.
- void updateSingleDAC(){
-   float nextSampleOscillator;
-   float nextSampleFilter;
-   float nextSample;
-   int dacOutput;
-   nextSampleOscillator = vaOscillator.getNaiveSample();
-   nextSampleFilter = vaFilter.update(nextSampleOscillator);
-   nextSample = nextSampleFilter;
-   dacOutput = int(halfMaxAmplitude * (1.0 + nextSample));
-   analogWrite(AUDIO_OUTPUT_PIN, dacOutput);
- }
-
-void printDuration()
-{
-  duration = micros() - startTime;
-  Serial.print("Duration = ");
-  Serial.print(duration);
-  Serial.println(" us");
-}
-
-//amplitudeSweep() is a Test Envelope Generator that creates a Decay of 1 second.
- 
- void amplitudeController(){
-  amplitudeDCO1 = amplitudeDCO1 - 0.001;
-  if(amplitudeDCO1 <= 0.0){
-    amplitudeDCO1 = 1.0;
-  }
-  //Test amplitude
-  amplitudeDCO1 = 1.0;
-}
-
-//frequencySweep() sets the frequency of the Oscillator from min to max.
-
-void frequencySweep(){
-  float k;
-  k = pow(2.0, frequencyCount / 10000.0);
-  frequency = minFrequency * k;
-  if(frequency > maxFrequency){
-    frequency = minFrequency;
-    frequencyCount = 0;
-    //Serial.println("****");
-  }
-  //Test Frequency
-  //frequency = 6000.0;
- 
-  frequencyCount = frequencyCount + frequencyIncrement; 
-  vaOscillator.setFrequency(frequency);                                           
-}
 
 void update(){
-  ///*
   if(filterBuffer.isReadyToWrite() && updatePhase == 1){
     vaFilter.updateBuffer(oscillatorBuffer, filterBuffer);
-    //vaFilter.updateBufferFloat(oscillatorBuffer, filterBuffer);
     vaAmplifier.updateBuffer(filterBuffer, amplifierBuffer);
     updatePhase = 0;
-    //Serial.println("F");
   }
   if(oscillatorBuffer.isReadyToWrite() && synchDAC){
     vaOscillator.updateBuffer(oscillatorBuffer);
-    //Option to remove Anti-Alysiasing correction with Poly-Blep
-    //vaOscillator.updateNaiveBuffer(oscillatorBuffer);
     updatePhase = 1;
     synchDAC = FALSE;
-    //Serial.println("O");
   }
-  //*/
   vaOscillator.update();
   vaFilter.update();
   vaAmplifier.update();
@@ -725,131 +514,47 @@ void update(){
 
 void controlUpdate() {
   update();
-  //frequencySweep();
-  //amplitudeController();
 }
 
 void setup() {
-  startTime = millis();
   Serial.begin(9600);
   analogWriteResolution(12);
   
   outputBufferSize = AUDIO_BUFFER_SIZE;
   synchDAC = FALSE;
-  getNextOscillatorBuffer = FALSE;
   updatePhase = 0;
   
   pinMode(LED, OUTPUT);
   pinMode(TUNED, OUTPUT);
   pinMode(FLAT, OUTPUT);
   pinMode(SHARP, OUTPUT);
-  
-  oscillatorBuffer0 = new float[outputBufferSize];
-  oscillatorBuffer1 = new float[outputBufferSize];
-  
-  startOscillatorBuffer();
-  
   oscillatorBuffer.start(outputBufferSize);
   filterBuffer.start(outputBufferSize);
   amplifierBuffer.start(outputBufferSize);
  
   //Initialise Teensy's IntervalTimers
-  
-  //Single sample output to DAC.
-  //updatevaOscillatorTimer.begin(updateSingleDAC, 1000000.0 / sampleRate); //Parameters are: Function to be called and interval is in µseconds
- 
   //Buffered output to DAC: update is called every 22.6 µseconds (44.1KHz rate)
-  updatevaOscillatorTimer.begin(outputBufferedDAC, 1000000.0 / sampleRate); //Parameters are: Function to be called and interval is in µseconds
+  updatevaOscillatorTimer.begin(outputBufferedDAC, 1000000.0 / SAMPLE_RATE); //Parameters are: Function to be called and interval is in µseconds
   updatevaOscillatorTimer.priority(10);
   updateControls.begin(controlUpdate, 250.0); //Controls are updated at 250.0µseconds or 0.25mseconds
   updateControls.priority(128);
-  ///*
   //MIDI Setup
   // Initiate MIDI communications, listen to all channels
   MIDI.begin(MIDI_CHANNEL_OMNI);    
-  // Connect the HandleNoteOn function to the library, so it is called upon reception of a NoteOn.
-  MIDI.setHandleNoteOn(HandleNoteOn);  // Put only the name of the function
-  MIDI.setHandleNoteOff(HandleNoteOff);  // Put only the name of the function
-  MIDI.setHandleControlChange(HandleControlChange);  // Put only the name of the function
-  MIDI.setHandlePitchBend(HandlePitchBend);  // Put only the name of the function 
+  MIDI.setHandleNoteOn(HandleNoteOn);
+  MIDI.setHandleNoteOff(HandleNoteOff);
+  MIDI.setHandleControlChange(HandleControlChange);
+  MIDI.setHandlePitchBend(HandlePitchBend); 
   
   usbMIDI.begin();    
-  usbMIDI.setHandleNoteOn(HandleNoteOn);  // Put only the name of the function
-  usbMIDI.setHandleNoteOff(HandleNoteOff);  // Put only the name of the function
-  usbMIDI.setHandleControlChange(HandleControlChange);  // Put only the name of the function
-  usbMIDI.setHandlePitchChange(HandlePitchBend);  // Put only the name of the function 
+  usbMIDI.setHandleNoteOn(HandleNoteOn);
+  usbMIDI.setHandleNoteOff(HandleNoteOff);
+  usbMIDI.setHandleControlChange(HandleControlChange);
+  usbMIDI.setHandlePitchChange(HandlePitchBend); 
 }
 
 void loop(){
 
-  if(MIDI.read()){
-     // Serial.println("MIDI Read");
-   }
-   
-  if (usbMIDI.read()) {
-    /*
-    Serial.print("USB type=");
-    Serial.print(usbMIDI.getType());
-    Serial.print(" ch=");
-    Serial.print(usbMIDI.getChannel());
-    Serial.print(" d1=");
-    Serial.print(usbMIDI.getData1());
-    Serial.print(" d2=");
-    Serial.println(usbMIDI.getData2());
-    */
-  }
-
-  //Use the code below to measure the processing time to generate
-  //the oscillator data for one buffer. 
-  /*
-   //vaOscillator.setWaveform(SAW);
-   Serial.print("SAW wave generation f= ");
-   Serial.print(frequency); Serial.print(" ");
-   startTime = micros();
-   vaOscillator.getNextBuffer(writeBuffer, outputBufferSize);
-   printDuration();
-   delay(1000);
-  */
-   /*
-   vaOscillator.setFrequency(440.0);
-   vaOscillator.setWaveform(SINE);
-   Serial.print("SINE wave generation ");
-   startTime = micros();
-   vaOscillator.updateBuffer(oscillatorBuffer);
-   printDuration();
-   delay(100);
-   vaOscillator.setWaveform(SAW);
-   Serial.print("SAW wave generation ");
-   startTime = micros();
-   vaOscillator.updateBuffer(oscillatorBuffer);
-   printDuration();
-   delay(100);
-   vaOscillator.setWaveform(SQUARE_PULSE);
-   Serial.print("SQUARE wave generation ");
-   startTime = micros();
-   vaOscillator.updateBuffer(oscillatorBuffer);
-   printDuration();
-   delay(100);
-   vaOscillator.setWaveform(XTREME);
-   Serial.print("XTREME wave generation ");
-   startTime = micros();
-   vaOscillator.updateBuffer(oscillatorBuffer);
-   printDuration();
-   delay(100);
-   */
-  
-  /*
-   Serial.print("Oscillator Buffer update ");
-   vaOscillator.setFrequency(1760.0);
-   vaOscillator.setWaveform(SAW);
-   startTime = micros();
-   vaOscillator.updateNaiveBuffer(oscillatorBuffer);
-   printDuration();
-   delay(100);
-    Serial.print("Filter Buffer update ");
-   startTime = micros();
-   vaFilter.updateBufferFloat(oscillatorBuffer, filterBuffer);
-   printDuration();
-   delay(100);
-  */
+  MIDI.read();
+  usbMIDI.read();
  }

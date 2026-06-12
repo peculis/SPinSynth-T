@@ -86,11 +86,11 @@ public:
     mWaveform(LFO_SINE),
     mPI(2*acos(0.0)),
     mFrequency(1.0),
-    mWaveTableSize (256) ,
-    mSampleRate(2000.0),
     mPulseWidth(0.50),
+    mPhase(0.0),
     lPhase(0),
-    mPhase(0.0) { 
+    mSampleRate(2000.0),
+    mWaveTableSize(256) { 
       mPulseThreshold = mPulseWidth * mWaveTableSize;
       mPulseOffset = 2.0 * (0.5 - mPulseWidth);
       mSquareThreshold = 0.5 * mWaveTableSize;

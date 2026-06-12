@@ -151,7 +151,6 @@ private:
   // float* generateBlepRisingTable(int size);
   // float* generateBlepFallingTable(int size);
   float getSawSample(long phase, long inc);
-  float getSawSamplePolyBlep(long phase, long inc);
   //long getSawSample(long phase, long inc);
   void updatePortamento();
   float updateTuning(float frequency);
@@ -192,12 +191,11 @@ public:
   Oscillator():
     mWaveform(SQUARE_PULSE),
     mPI(2*acos(0.0)),
-    mFrequency(440.0),
-    //mWaveTableSize (256) ,
-    mSampleRate(44100.0),
     mPulseWidth(0.50),
+    mFrequency(440.0),
+    mPhase(0.0),
     lPhase(0),
-    mPhase(0.0) { 
+    mSampleRate(44100.0) { 
       mStartFrequency = mFrequency;
       mEndFrequency = mFrequency;
       mTargetFrequency = mFrequency;

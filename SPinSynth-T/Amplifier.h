@@ -16,10 +16,7 @@
 
 class Amplifier{
 public:
-   float update(float input);
    void update();
-   long lUpdate(long input);
-   void updateBufferFloat(DoubleBuffer bufferIn, DoubleBuffer bufferOut);
    void updateBuffer(DoubleBuffer bufferIn, DoubleBuffer bufferOut);
    void setAttack(int attack);
    void setDecay(int decay);
@@ -33,10 +30,6 @@ public:
 private:
   EnvelopeGenerator envelope;
   long envelopeLevel;
-  float mAttack = 1.0;
-  float mDecay = 0.0;
-  float mSustain = 1.0;
-  float mRelease = 0.0;
   float mVolume = 1.0;
   long  lVolume = long(floatFactor);
   int mPitch;

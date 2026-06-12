@@ -80,7 +80,6 @@ float* DoubleBuffer::getReadBuffer(){
 }
 
 void DoubleBuffer::swapBuffer(){
-  //Serial.println("Swap Buffer");
   float* xBuffer;
   xBuffer = readBuffer;
   readBuffer = writeBuffer;
@@ -101,7 +100,6 @@ float DoubleBuffer::read(){
 }
 
 void DoubleBuffer::write(float sample){
-  //Serial.println("Write Buffer");
   writeBuffer[writeSample] = sample;
   writeSample++;
   if(writeSample >= bSize){
